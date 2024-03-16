@@ -3,6 +3,7 @@ package org.thivernale.orderservice.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.thivernale.orderservice.dto.OrderLineItemDto;
 import org.thivernale.orderservice.dto.OrderRequest;
 import org.thivernale.orderservice.dto.OrderResponse;
@@ -16,6 +17,7 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@Transactional
 public class OrderService {
     private final OrderRepository orderRepository;
 

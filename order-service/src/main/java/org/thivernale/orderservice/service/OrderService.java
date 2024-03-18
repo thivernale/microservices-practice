@@ -24,7 +24,7 @@ import java.util.UUID;
 public class OrderService {
     private final OrderRepository orderRepository;
 
-    private final RestClient restClient;
+    private final RestClient.Builder restClientBuilder;
 
     public void placeOrder(OrderRequest orderRequest) {
         Order order = new Order();
@@ -42,12 +42,13 @@ public class OrderService {
             .toList());
 
         // check availability
-        InventoryResponse[] inventoryResponseArray = restClient.get()
-            .uri("http://localhost:8082/api/inventory", (uriBuilder) -> uriBuilder.queryParam("sku-code",
+        InventoryResponse[] inventoryResponseArray = restClientBuilder.build()
+            .get()
+            .uri("http://inventory-service/api/inventory", (uriBuilder) -> uriBuilder.queryParam("sku-code",
                     order.getItems()
-                    .stream()
-                    .map(OrderLineItem::getSkuCode)
-                    .toList())
+                        .stream()
+                        .map(OrderLineItem::getSkuCode)
+                        .toList())
                 .build())
             .retrieve()
             .body(InventoryResponse[].class);

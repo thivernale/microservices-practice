@@ -1,5 +1,7 @@
 package org.thivernale.orderservice.service;
 
+import brave.Span;
+import brave.Tracer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -26,6 +28,8 @@ public class OrderService {
 
     private final RestClient.Builder restClientBuilder;
 
+    private final Tracer tracer;
+
     public void placeOrder(OrderRequest orderRequest) {
         Order order = new Order();
         order.setOrderNumber(UUID.randomUUID()
@@ -41,29 +45,37 @@ public class OrderService {
             })
             .toList());
 
-        // check availability
-        InventoryResponse[] inventoryResponseArray = restClientBuilder.build()
-            .get()
-            .uri("http://inventory-service/api/inventory", (uriBuilder) -> uriBuilder.queryParam("sku-code",
-                    order.getItems()
-                        .stream()
-                        .map(OrderLineItem::getSkuCode)
-                        .toList())
-                .build())
-            .retrieve()
-            .body(InventoryResponse[].class);
-        List<InventoryResponse> inventoryResponseList = Arrays.stream(inventoryResponseArray)
-            .toList();
+        Span inventoryServiceLookup = tracer.nextSpan()
+            .name("InventoryServiceLookup");
 
-        boolean allProductsInStock = inventoryResponseList.stream()
-            .allMatch(InventoryResponse::isInStock);
+        try (Tracer.SpanInScope spanInScope = tracer.withSpanInScope(inventoryServiceLookup.start())) {
 
-        log.info("{}", inventoryResponseList);
+            // check availability
+            InventoryResponse[] inventoryResponseArray = restClientBuilder.build()
+                .get()
+                .uri("http://inventory-service/api/inventory", (uriBuilder) -> uriBuilder.queryParam("sku-code",
+                        order.getItems()
+                            .stream()
+                            .map(OrderLineItem::getSkuCode)
+                            .toList())
+                    .build())
+                .retrieve()
+                .body(InventoryResponse[].class);
+            List<InventoryResponse> inventoryResponseList = Arrays.stream(inventoryResponseArray)
+                .toList();
 
-        if (allProductsInStock) {
-            orderRepository.save(order);
-        } else {
-            throw new IllegalArgumentException("Product is not in stock, please try again later");
+            boolean allProductsInStock = inventoryResponseList.stream()
+                .allMatch(InventoryResponse::isInStock);
+
+            log.info("{}", inventoryResponseList);
+
+            if (allProductsInStock) {
+                orderRepository.save(order);
+            } else {
+                throw new IllegalArgumentException("Product is not in stock, please try again later");
+            }
+        } finally {
+            inventoryServiceLookup.finish();
         }
     }
 

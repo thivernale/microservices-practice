@@ -5,6 +5,8 @@ import io.github.resilience4j.retry.annotation.Retry;
 import io.github.resilience4j.timelimiter.annotation.TimeLimiter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.thivernale.orderservice.dto.OrderRequest;
@@ -21,6 +23,7 @@ import java.util.concurrent.CompletableFuture;
 public class OrderController {
 
     private final OrderService orderService;
+    private final DiscoveryClient discoveryClient;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -43,5 +46,10 @@ public class OrderController {
     @ResponseStatus(HttpStatus.OK)
     public List<OrderResponse> getAllOrders() {
         return orderService.getAllOrders();
+    }
+
+    @GetMapping("service-instances/{applicationName}")
+    public List<ServiceInstance> getServiceInstances(@PathVariable("applicationName") String serviceId) {
+        return discoveryClient.getInstances(serviceId);
     }
 }

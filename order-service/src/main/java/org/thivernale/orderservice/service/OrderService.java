@@ -17,6 +17,7 @@ import org.thivernale.orderservice.model.Order;
 import org.thivernale.orderservice.model.OrderLineItem;
 import org.thivernale.orderservice.repository.OrderRepository;
 
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -85,6 +86,15 @@ public class OrderService {
     }
 
     public List<OrderResponse> getAllOrders() {
+        // in order to test go to terminal of Kafka broker container and run command:
+        // > kafka-console-consumer --topic codeTopic --from-beginning --bootstrap-server localhost:9092
+        kafkaTemplate.send(
+            "codeTopic",
+            String.valueOf(Instant.now()
+                .toEpochMilli()),
+            new OrderPlacedEvent("999-list")
+        );
+
         return orderRepository.findAll()
             .stream()
             .map(this::mapToProductResponse)

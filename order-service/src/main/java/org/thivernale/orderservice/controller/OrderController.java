@@ -9,6 +9,8 @@ import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.thivernale.orderservice.dto.InventoryResponse;
+import org.thivernale.orderservice.dto.OrderLineItemDto;
 import org.thivernale.orderservice.dto.OrderRequest;
 import org.thivernale.orderservice.dto.OrderResponse;
 import org.thivernale.orderservice.service.OrderService;
@@ -35,6 +37,14 @@ public class OrderController {
             orderService.placeOrder(orderRequest);
             return null;
         });
+    }
+
+    @PostMapping("check-availability")
+    public List<InventoryResponse> checkAvailability(@RequestBody OrderRequest orderRequest) {
+        return orderService.checkAvailability(orderRequest.getItems()
+            .stream()
+            .map(OrderLineItemDto::getSkuCode)
+            .toList());
     }
 
     public CompletableFuture<?> fallbackMethod(OrderRequest orderRequest, RuntimeException exception) {

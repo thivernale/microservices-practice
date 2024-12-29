@@ -8,6 +8,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClient;
+import org.thivernale.orderservice.client.InventoryClient;
 import org.thivernale.orderservice.dto.InventoryResponse;
 import org.thivernale.orderservice.dto.OrderLineItemDto;
 import org.thivernale.orderservice.dto.OrderRequest;
@@ -34,6 +35,8 @@ public class OrderService {
     private final Tracer tracer;
 
     private final KafkaTemplate<String, OrderPlacedEvent> kafkaTemplate;
+
+    private final InventoryClient inventoryClient;
 
     public void placeOrder(OrderRequest orderRequest) {
         Order order = new Order();
@@ -83,6 +86,20 @@ public class OrderService {
         } finally {
             inventoryServiceLookup.finish();
         }
+    }
+
+    public List<InventoryResponse> checkAvailability(List<String> skuCode) {
+        List<InventoryResponse> inStock;
+
+        Span inventoryServiceClient = tracer.nextSpan()
+            .name("InventoryServiceClient");
+
+        try (Tracer.SpanInScope spanInScope = tracer.withSpanInScope(inventoryServiceClient.start())) {
+            inStock = inventoryClient.isInStock(skuCode);
+        } finally {
+            inventoryServiceClient.finish();
+        }
+        return inStock;
     }
 
     public List<OrderResponse> getAllOrders() {

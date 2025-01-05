@@ -89,17 +89,17 @@ public class OrderService {
     }
 
     public List<InventoryResponse> checkAvailability(List<String> skuCode) {
-        List<InventoryResponse> inStock;
+        List<InventoryResponse> inStockList;
 
         Span inventoryServiceClient = tracer.nextSpan()
             .name("InventoryServiceClient");
 
         try (Tracer.SpanInScope spanInScope = tracer.withSpanInScope(inventoryServiceClient.start())) {
-            inStock = inventoryClient.isInStock(skuCode);
+            inStockList = inventoryClient.isInStock(skuCode);
         } finally {
             inventoryServiceClient.finish();
         }
-        return inStock;
+        return inStockList;
     }
 
     public List<OrderResponse> getAllOrders() {

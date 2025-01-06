@@ -1,0 +1,12 @@
+[
+  {
+    "skuCode": "001",
+    "inStock": true,
+    "quantity": 200
+  },
+  {
+    "skuCode": "002",
+    "inStock": false,
+    "quantity": 0
+  }
+]

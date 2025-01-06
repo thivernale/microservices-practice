@@ -74,6 +74,13 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.epages</groupId>
+            <artifactId>wiremock-spring-boot-starter</artifactId>
+            <version>1.0.0</version>
+            <scope>test</scope>
+            <type>pom</type>
+        </dependency>
     </dependencies>
     <dependencyManagement>
         <dependencies>

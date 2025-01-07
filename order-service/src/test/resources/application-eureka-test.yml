@@ -1,0 +1,11 @@
+spring:
+  application:
+    name: inventory-service
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URI:http://eureka:password@localhost:8761/eureka}
+    enabled: true
+  instance:
+    hostname: localhost

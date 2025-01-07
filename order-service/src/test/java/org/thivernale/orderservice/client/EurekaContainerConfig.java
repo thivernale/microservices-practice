@@ -24,7 +24,7 @@ public class EurekaContainerConfig {
             Startables.deepStart(Stream.of(eurekaServer))
                 .join();
 
-            TestPropertyValues.of("eureka.client.serviceUrl.defaultZone=http://localhost:" + eurekaServer.getFirstMappedPort()
+            TestPropertyValues.of("eureka.client.service-url.defaultZone=http://localhost:" + eurekaServer.getFirstMappedPort()
                     .toString() + "/eureka")
                 .applyTo(applicationContext);
         }

@@ -5,12 +5,13 @@ import org.awaitility.Awaitility;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
-import org.thivernale.orderservice.OrderServiceApplication;
 import org.thivernale.orderservice.dto.InventoryResponse;
 
 import java.util.List;
@@ -19,15 +20,16 @@ import java.util.concurrent.TimeUnit;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest(
-    classes = {OrderServiceApplication.class},
+    classes = {MockInventoryServiceConfig.class, InventoryClient.class},
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
 )
 @ContextConfiguration(
-    classes = {MockInventoryServiceConfig.class}/*,
-    initializers = {EurekaContainerConfig.Initializer.class}*/
-                                                )
+    initializers = {EurekaContainerConfig.Initializer.class}
+)
 @ActiveProfiles("eureka-test")
 @EnableConfigurationProperties
+@EnableFeignClients
+@EnableAutoConfiguration
 public class ServiceDiscoveryInventoryClientIntegrationTest {
     @Autowired
     private InventoryClient inventoryClient;
@@ -44,7 +46,8 @@ public class ServiceDiscoveryInventoryClientIntegrationTest {
     }
 
     /**
-     * NB: ensure that Eureka is running for test to pass (start DiscoveryServerApplication)
+     * NB: ensure that Eureka is running for test to pass (start DiscoveryServerApplication) - see revision
+     * NB2: now running with testcontainers Eureka without any other services started
      */
     @Test
     public void whenCheckAvailability_thenTheCorrectAvailabilityShouldBeReturned() {

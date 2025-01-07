@@ -26,6 +26,7 @@ public class MockInventoryServiceConfig {
             .getResourceAsStream("payload/get-inventory-availability-response.json");
         ObjectMapper objectMapper = new ObjectMapper();
 
+        // deserialize generic type with Jackson
         return objectMapper.readValue(inputStream, new TypeReference<>() {
         });
     }

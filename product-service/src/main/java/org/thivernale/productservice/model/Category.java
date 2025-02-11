@@ -2,23 +2,21 @@ package org.thivernale.productservice.model;
 
 import lombok.*;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.validation.annotation.Validated;
 
-import java.math.BigDecimal;
+import java.math.BigInteger;
 
-@Document(collection = "product")
+@Document
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
 @Getter
 @Setter
-public class Product {
+@Validated
+public class Category {
     @Id
-    private String id;
+    private BigInteger id;
     private String name;
     private String description;
-    private BigDecimal price;
-    @DBRef
-    private Category category;
 }

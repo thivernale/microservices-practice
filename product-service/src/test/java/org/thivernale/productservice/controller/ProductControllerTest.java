@@ -4,26 +4,30 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.data.mongo.AutoConfigureDataMongo;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.test.context.jdbc.Sql;
-import org.springframework.test.context.jdbc.SqlConfig;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 import org.thivernale.productservice.dto.ProductRequest;
+import org.thivernale.productservice.model.Category;
 import org.thivernale.productservice.model.Product;
+import org.thivernale.productservice.repository.CategoryRepository;
 import org.thivernale.productservice.repository.ProductRepository;
+import org.thivernale.productservice.service.ProductMapper;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -31,10 +35,16 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @SpringBootTest
 @Testcontainers
 @AutoConfigureMockMvc
+@AutoConfigureDataMongo
+@Transactional
 class ProductControllerTest {
 
     @Container
-    static MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:latest"));
+    static MongoDBContainer mongoDBContainer =
+        new MongoDBContainer(DockerImageName.parse("mongo:latest"))
+            /*.withCopyFileToContainer(
+                MountableFile.forClasspathResource("init-schema.js"),
+                "/docker-entrypoint-initdb.d/init-script.js")*/;
 
     @Autowired
     private MockMvc mockMvc;
@@ -43,7 +53,13 @@ class ProductControllerTest {
     private ObjectMapper objectMapper;
 
     @Autowired
+    private ProductMapper productMapper;
+
+    @Autowired
     private ProductRepository productRepository;
+
+    @Autowired
+    private CategoryRepository categoryRepository;
 
     @DynamicPropertySource
     static void setProperties(DynamicPropertyRegistry dynamicPropertyRegistry) {
@@ -64,8 +80,8 @@ class ProductControllerTest {
             .andExpect(MockMvcResultMatchers.status()
                 .isCreated());
 
-        assertEquals(productRepository.findAll()
-            .size(), 1);
+        assertEquals(1, productRepository.findAll()
+            .size());
     }
 
     @Test
@@ -78,15 +94,18 @@ class ProductControllerTest {
     }
 
     @Test
-    @Sql(
+    // Why would one do this against mongodb anyway?
+    /*@Sql(
         statements = {"SELECT 1;"},
         executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD,
         config = @SqlConfig(transactionMode = SqlConfig.TransactionMode.DEFAULT),
         scripts = {}
-    )
+    )*/
     public void shouldGetListOfProducts() throws Exception {
 
-        Product product = objectMapper.convertValue(getProductRequest(), Product.class);
+        Product product = productMapper.toProduct(getProductRequest());
+        Category category = categoryRepository.save(product.getCategory());
+        product.setCategory(category);
         productRepository.save(product);
 
         mockMvc.perform(MockMvcRequestBuilders.get("/api/product"))
@@ -96,10 +115,12 @@ class ProductControllerTest {
             .andExpect(MockMvcResultMatchers.jsonPath("$[0].id", Matchers.anything()))
             .andExpect(MockMvcResultMatchers.jsonPath("$[0].name", Matchers.equalTo(product.getName())))
             .andExpect(MockMvcResultMatchers.jsonPath("$[0].description", Matchers.equalTo(product.getDescription())))
+            .andExpect(MockMvcResultMatchers.jsonPath("$[0].categoryId", Matchers.equalTo(product.getCategory()
+                .getId()
+                .intValue())))
             .andExpect(MockMvcResultMatchers.jsonPath("$[0].price", Matchers.equalTo(product.getPrice()
                 .intValue())))
-            .andDo(MockMvcResultHandlers.print())
-        ;
+            .andDo(MockMvcResultHandlers.print());
     }
 
     private ProductRequest getProductRequest() {
@@ -107,6 +128,7 @@ class ProductControllerTest {
             .name("Test Name")
             .description("Test Description")
             .price(BigDecimal.valueOf(1_200))
+            .categoryId(BigInteger.valueOf(123))
             .build();
     }
 }

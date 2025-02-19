@@ -1,0 +1,142 @@
+name: microservices-practice
+services:
+  mysql:
+    image: 'mysql:latest'
+    volumes:
+      - mysql_data:/var/lib/mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD}
+      # MYSQL_DATABASE:
+      # MYSQL_PASSWORD:
+      # MYSQL_USER:
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      timeout: 20s
+      retries: 10
+    ports:
+      - '3306:3306'
+
+  mongo:
+    image: mongo
+    volumes:
+      - mongo_data:/data/db
+      - ./mongodb/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    restart: unless-stopped
+    networks:
+      - microservices-net
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGO_INITDB_DATABASE}
+    ports:
+      - '27017:27017'
+
+  mongo-express:
+    image: mongo-express
+    restart: unless-stopped
+    networks:
+      - microservices-net
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      ME_CONFIG_MONGODB_ADMINPASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+      ME_CONFIG_MONGODB_SERVER: mongo
+    ports:
+      - '8081:8081'
+    profiles: [ 'local' ]
+
+  mail-dev:
+    image: maildev/maildev
+    networks:
+      - microservices-net
+    ports:
+      - '1025:1025'
+      - '1080:1080'
+    profiles: [ 'local' ]
+
+
+  zipkin:
+    image: openzipkin/zipkin
+    restart: unless-stopped
+    ports:
+      - '9411:9411'
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.3.0
+    environment:
+      ZOOKEEPER_SERVER_ID: 1
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - kafka-net
+
+  broker:
+    image: confluentinc/cp-kafka:7.3.0
+    hostname: broker
+    ports:
+      - '9092:9092'
+    depends_on:
+      - zookeeper
+    networks:
+      - kafka-net
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      #      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_NODE_ID: 1
+  #      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@broker:29093
+  #     KAFKA_LISTENERS: PLAINTEXT://broker:9092,CONTROLLER://broker:29093,PLAINTEXT_HOST://0.0.0.0:29092
+  #    KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+  #      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+  #      KAFKA_LOG_DIRS: /tmp/kraft-combined-logs
+  #      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
+  #
+  #  schema-registry:
+  #    image: confluentinc/cp-schema-registry:7.3.0
+  #    hostname: schema-registry
+  #    depends_on:
+  #      - broker
+  #    ports:
+  #      - 8081:8081
+  #    environment:
+  #      SCHEMA_REGISTRY_HOST_NAME: schema-registry
+  #      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: broker:9092
+  #      SCHEMA_REGISTRY_LOG4J_ROOT_LOGLEVEL: WARN
+
+  keycloak:
+    image: quay.io/keycloak/keycloak
+    restart: unless-stopped
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+      KC_HOSTNAME: localhost
+      KC_HOSTNAME_PORT: 8080
+      KC_HOSTNAME_STRICT_BACKCHANNEL: false
+      KC_HTTP_ENABLED: true
+      KC_HOSTNAME_STRICT_HTTPS: false
+      KC_HEALTH_ENABLED: true
+    #      KC_DB: postgres
+    #      KC_DB_URL: jdbc:postgresql://postgres/${POSTGRES_DB}
+    #      KC_DB_USERNAME: ${POSTGRES_USER}
+    #      KC_DB_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - '8180:8080'
+    command: start-dev
+
+volumes:
+  mysql_data:
+    driver: local
+  mongo_data:
+    driver: local
+
+networks:
+  microservices-net:
+    driver: bridge
+  kafka-net:
+    driver: bridge

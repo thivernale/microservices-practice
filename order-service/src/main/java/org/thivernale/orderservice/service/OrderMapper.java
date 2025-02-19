@@ -5,6 +5,7 @@ import org.thivernale.orderservice.dto.OrderLineItemDto;
 import org.thivernale.orderservice.dto.OrderRequest;
 import org.thivernale.orderservice.dto.OrderResponse;
 import org.thivernale.orderservice.model.Order;
+import org.thivernale.orderservice.model.OrderLineItem;
 
 @Service
 public class OrderMapper {
@@ -36,6 +37,16 @@ public class OrderMapper {
                     .quantity(orderLineItem.getQuantity())
                     .build())
                 .toList())
+            .build();
+    }
+
+    public OrderLineItem toOrderLineItem(OrderLineItemDto orderLineItemDto) {
+        return OrderLineItem.builder()
+            .id(orderLineItemDto.getId())
+            .skuCode(orderLineItemDto.getSkuCode())
+            .price(orderLineItemDto.getPrice())
+            .productId(orderLineItemDto.getProductId())
+            .quantity(orderLineItemDto.getQuantity())
             .build();
     }
 }

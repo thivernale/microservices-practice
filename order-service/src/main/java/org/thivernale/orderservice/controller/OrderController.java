@@ -3,6 +3,7 @@ package org.thivernale.orderservice.controller;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
 import io.github.resilience4j.timelimiter.annotation.TimeLimiter;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.client.ServiceInstance;
@@ -14,6 +15,7 @@ import org.thivernale.orderservice.dto.InventoryResponse;
 import org.thivernale.orderservice.dto.OrderLineItemDto;
 import org.thivernale.orderservice.dto.OrderRequest;
 import org.thivernale.orderservice.dto.OrderResponse;
+import org.thivernale.orderservice.exception.BusinessException;
 import org.thivernale.orderservice.service.OrderService;
 
 import java.util.List;
@@ -33,11 +35,14 @@ public class OrderController {
     @CircuitBreaker(name = "inventory", fallbackMethod = "fallbackMethod")
     @TimeLimiter(name = "inventory")
     @Retry(name = "inventory")
-    public CompletableFuture<?> placeOrder(@RequestBody OrderRequest orderRequest) {
+    public CompletableFuture<?> placeOrder(@RequestBody @Valid OrderRequest orderRequest) {
         return CompletableFuture.supplyAsync(() -> {
-            orderService.placeOrder(orderRequest);
-            return null;
-        });
+                orderService.placeOrder(orderRequest);
+                return null;
+            })
+            .exceptionally(throwable -> {
+                return CompletableFuture.failedFuture(new BusinessException(throwable.getMessage()));
+            });
     }
 
     @PostMapping("check-availability")

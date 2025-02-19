@@ -27,4 +27,19 @@ public class OrderMocks {
             )
         );
     }
+
+    public static void setupMockCustomerResponse(WireMockServer mockServer) throws IOException {
+        mockServer.stubFor(WireMock.get(WireMock.urlPathTemplate("/api/customer/{id}"))
+            .withPathParam("id", new AnythingPattern())
+            .willReturn(WireMock.aResponse()
+                .withStatus(HttpStatus.OK.value())
+                .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .withBody(StreamUtils.copyToString(
+                    OrderMocks.class.getClassLoader()
+                        .getResourceAsStream("payload/get-customer-response.json"),
+                    Charset.defaultCharset()
+                ))
+            )
+        );
+    }
 }

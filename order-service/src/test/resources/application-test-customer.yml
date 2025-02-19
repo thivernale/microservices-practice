@@ -1,0 +1,17 @@
+spring:
+  application:
+    name: CUSTOMER-SERVICE
+  cloud:
+    discovery:
+      client:
+        simple:
+          instances:
+            CUSTOMER-SERVICE[0]:
+              uri: http://localhost:1030
+            CUSTOMER-SERVICE[1]:
+              uri: http://localhost:1031
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration,org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration,org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration,org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration
+eureka:
+  client:
+    enabled: false

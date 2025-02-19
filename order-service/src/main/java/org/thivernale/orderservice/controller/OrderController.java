@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.thivernale.orderservice.dto.InventoryResponse;
 import org.thivernale.orderservice.dto.OrderLineItemDto;
@@ -58,8 +59,20 @@ public class OrderController {
         return orderService.getAllOrders();
     }
 
+    @GetMapping("{id}")
+    public ResponseEntity<OrderResponse> getOrder(@PathVariable("id") Long id) {
+        return ResponseEntity.ok(orderService.findById(id));
+    }
+
     @GetMapping("service-instances/{applicationName}")
     public List<ServiceInstance> getServiceInstances(@PathVariable("applicationName") String serviceId) {
         return discoveryClient.getInstances(serviceId);
+    }
+
+    @PostMapping("/send-test-event")
+    public ResponseEntity<Void> sendTestEvent() {
+        orderService.sendTestEvent();
+        return ResponseEntity.accepted()
+            .build();
     }
 }

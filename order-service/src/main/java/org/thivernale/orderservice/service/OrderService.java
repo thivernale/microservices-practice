@@ -2,18 +2,21 @@ package org.thivernale.orderservice.service;
 
 import brave.Span;
 import brave.Tracer;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClient;
+import org.thivernale.orderservice.client.CustomerClient;
 import org.thivernale.orderservice.client.InventoryClient;
 import org.thivernale.orderservice.dto.InventoryResponse;
 import org.thivernale.orderservice.dto.OrderLineItemDto;
 import org.thivernale.orderservice.dto.OrderRequest;
 import org.thivernale.orderservice.dto.OrderResponse;
 import org.thivernale.orderservice.event.OrderPlacedEvent;
+import org.thivernale.orderservice.exception.BusinessException;
 import org.thivernale.orderservice.model.Order;
 import org.thivernale.orderservice.model.OrderLineItem;
 import org.thivernale.orderservice.repository.OrderRepository;
@@ -37,6 +40,8 @@ public class OrderService {
     private final KafkaTemplate<String, OrderPlacedEvent> kafkaTemplate;
 
     private final InventoryClient inventoryClient;
+    private final CustomerClient customerClient;
+    private final OrderMapper orderMapper;
 
     public void placeOrder(OrderRequest orderRequest) {
         Order order = new Order();
@@ -79,6 +84,7 @@ public class OrderService {
 
             if (allProductsInStock) {
                 orderRepository.save(order);
+
                 kafkaTemplate.send("notificationTopic", new OrderPlacedEvent(order.getOrderNumber()));
             } else {
                 throw new IllegalArgumentException("Product is not in stock, please try again later");
@@ -103,6 +109,19 @@ public class OrderService {
     }
 
     public List<OrderResponse> getAllOrders() {
+        return orderRepository.findAll()
+            .stream()
+            .map(orderMapper::fromOrder)
+            .toList();
+    }
+
+    public OrderResponse findById(Long id) {
+        return orderRepository.findById(id)
+            .map(orderMapper::fromOrder)
+            .orElseThrow(() -> new EntityNotFoundException(String.format("Order with id %d not found", id)));
+    }
+
+    public void sendTestEvent() {
         // in order to test go to terminal of Kafka broker container and run command:
         // > kafka-console-consumer --topic codeTopic --from-beginning --bootstrap-server localhost:9092
         kafkaTemplate.send(
@@ -111,26 +130,5 @@ public class OrderService {
                 .toEpochMilli()),
             new OrderPlacedEvent("999-list")
         );
-
-        return orderRepository.findAll()
-            .stream()
-            .map(this::mapToProductResponse)
-            .toList();
-    }
-
-    private OrderResponse mapToProductResponse(Order order) {
-        return OrderResponse.builder()
-            .id(order.getId())
-            .orderNumber(order.getOrderNumber())
-            .items(order.getItems()
-                .stream()
-                .map(orderLineItem -> OrderLineItemDto.builder()
-                    .id(orderLineItem.getId())
-                    .skuCode(orderLineItem.getSkuCode())
-                    .price(orderLineItem.getPrice())
-                    .quantity(orderLineItem.getQuantity())
-                    .build())
-                .toList())
-            .build();
     }
 }

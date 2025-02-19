@@ -30,7 +30,7 @@ public class OrderController {
     private final OrderService orderService;
     private final DiscoveryClient discoveryClient;
 
-    @PostMapping
+    @PostMapping("/async")
     @ResponseStatus(HttpStatus.CREATED)
     @CircuitBreaker(name = "inventory", fallbackMethod = "fallbackMethod")
     @TimeLimiter(name = "inventory")
@@ -45,17 +45,23 @@ public class OrderController {
             });
     }
 
+    public CompletableFuture<?> fallbackMethod(OrderRequest orderRequest, RuntimeException exception) {
+        log.warn(exception.getMessage());
+        return CompletableFuture.supplyAsync(() -> null);
+    }
+
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public void createOrder(@RequestBody @Valid OrderRequest orderRequest) {
+        orderService.placeOrder(orderRequest);
+    }
+
     @PostMapping("check-availability")
     public List<InventoryResponse> checkAvailability(@RequestBody OrderRequest orderRequest) {
         return orderService.checkAvailability(orderRequest.getItems()
             .stream()
             .map(OrderLineItemDto::getSkuCode)
             .toList());
-    }
-
-    public CompletableFuture<?> fallbackMethod(OrderRequest orderRequest, RuntimeException exception) {
-        log.warn(exception.getMessage());
-        return CompletableFuture.supplyAsync(() -> null);
     }
 
     @GetMapping

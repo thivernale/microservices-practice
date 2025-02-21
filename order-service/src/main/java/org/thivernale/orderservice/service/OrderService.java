@@ -11,10 +11,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.thivernale.orderservice.client.CustomerClient;
 import org.thivernale.orderservice.client.InventoryClient;
 import org.thivernale.orderservice.client.InventoryRestClient;
-import org.thivernale.orderservice.dto.InventoryResponse;
-import org.thivernale.orderservice.dto.OrderLineItemDto;
-import org.thivernale.orderservice.dto.OrderRequest;
-import org.thivernale.orderservice.dto.OrderResponse;
+import org.thivernale.orderservice.client.PaymentClient;
+import org.thivernale.orderservice.dto.*;
 import org.thivernale.orderservice.event.OrderPlacedEvent;
 import org.thivernale.orderservice.exception.BusinessException;
 import org.thivernale.orderservice.model.Order;
@@ -41,6 +39,7 @@ public class OrderService {
     private final InventoryClient inventoryClient;
     private final InventoryRestClient inventoryRestClient;
     private final CustomerClient customerClient;
+    private final PaymentClient paymentClient;
 
     public void placeOrder(OrderRequest orderRequest) {
         var customer = customerClient.findById(orderRequest.getCustomerId())
@@ -67,6 +66,14 @@ public class OrderService {
                 .toList());
 
             orderRepository.save(order);
+
+            paymentClient.createPayment(new PaymentRequest(
+                order.getTotalAmount(),
+                order.getPaymentMethod(),
+                order.getId(),
+                orderRequest.getReference(),
+                customer
+            ));
 
             kafkaTemplate.send("notificationTopic", new OrderPlacedEvent(order.getOrderNumber()));
         } else {

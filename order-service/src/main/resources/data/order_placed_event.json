@@ -1,0 +1,20 @@
+{
+  "orderReference": "999-list",
+  "totalAmount": 200.0,
+  "paymentMethod": "CREDIT_CARD",
+  "customer": {
+    "id": "CUSTOMERID",
+    "firstName": "John",
+    "lastName": "Doe",
+    "email": "jdoe@example.com"
+  },
+  "products": [
+    {
+      "id": 123,
+      "skuCode": "SKU-123",
+      "productId": "PR-123",
+      "price": 10.0,
+      "quantity": 1.0
+    }
+  ]
+}

@@ -30,15 +30,13 @@ public class KafkaProducerConfig {
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootStrapServers);
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
-        props.put(JsonSerializer.TYPE_MAPPINGS, "event:org.thivernale.orderservice.event.OrderPlacedEvent");
+        props.put(JsonSerializer.TYPE_MAPPINGS, "orderPlacedEvent:org.thivernale.orderservice.event.OrderPlacedEvent");
 
         return props;
     }
 
     /**
      * Construct a producer factory with the provided configuration
-     *
-     * @return
      */
     @Bean
     public ProducerFactory<String, OrderPlacedEvent> producerFactory() {
@@ -47,8 +45,6 @@ public class KafkaProducerConfig {
 
     /**
      * Construct a Kafka template with provided producer factory
-     *
-     * @return
      */
     @Bean
     public KafkaTemplate<String, OrderPlacedEvent> kafkaTemplate(ProducerFactory<String, OrderPlacedEvent> producerFactory) {

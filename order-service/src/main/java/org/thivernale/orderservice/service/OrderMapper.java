@@ -22,7 +22,6 @@ public class OrderMapper {
     public OrderResponse fromOrder(Order order) {
         return OrderResponse.builder()
             .id(order.getId())
-            .orderNumber(order.getOrderNumber())
             .reference(order.getReference())
             .totalAmount(order.getTotalAmount())
             .paymentMethod(order.getPaymentMethod())

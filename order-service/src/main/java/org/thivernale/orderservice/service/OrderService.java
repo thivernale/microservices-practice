@@ -2,10 +2,12 @@ package org.thivernale.orderservice.service;
 
 import brave.Span;
 import brave.Tracer;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.kafka.core.KafkaTemplate;
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.thivernale.orderservice.client.CustomerClient;
@@ -16,8 +18,11 @@ import org.thivernale.orderservice.dto.*;
 import org.thivernale.orderservice.event.OrderPlacedEvent;
 import org.thivernale.orderservice.exception.BusinessException;
 import org.thivernale.orderservice.model.Order;
+import org.thivernale.orderservice.notification.NotificationProducer;
 import org.thivernale.orderservice.repository.OrderRepository;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.time.Instant;
 import java.util.List;
 import java.util.Set;
@@ -34,12 +39,11 @@ public class OrderService {
 
     private final Tracer tracer;
 
-    private final KafkaTemplate<String, OrderPlacedEvent> kafkaTemplate;
-
     private final InventoryClient inventoryClient;
     private final InventoryRestClient inventoryRestClient;
     private final CustomerClient customerClient;
     private final PaymentClient paymentClient;
+    private final NotificationProducer notificationProducer;
 
     public void placeOrder(OrderRequest orderRequest) {
         var customer = customerClient.findById(orderRequest.getCustomerId())
@@ -53,12 +57,14 @@ public class OrderService {
         List<InventoryResponse> inventoryResponseList = inventoryRestClient.fetchInventory(skuCodes);
 
         boolean allProductsInStock = skuCodes.size() == inventoryResponseList.size() && inventoryResponseList.stream()
-            .allMatch(InventoryResponse::isInStock);
+            .allMatch(InventoryResponse::inStock);
 
         if (allProductsInStock) {
             Order order = orderMapper.toOrder(orderRequest);
-            order.setOrderNumber(UUID.randomUUID()
-                .toString());
+            if (Strings.isBlank(order.getReference())) {
+                order.setReference(UUID.randomUUID()
+                    .toString());
+            }
             order.setItems(orderRequest.getItems()
                 .stream()
                 .map(orderMapper::toOrderLineItem)
@@ -75,7 +81,13 @@ public class OrderService {
                 customer
             ));
 
-            kafkaTemplate.send("notificationTopic", new OrderPlacedEvent(order.getOrderNumber()));
+            notificationProducer.sendNotification(new OrderPlacedEvent(
+                order.getReference(),
+                order.getTotalAmount(),
+                order.getPaymentMethod(),
+                customer,
+                orderRequest.getItems()
+            ));
         } else {
             throw new BusinessException("Product is not in stock, please try again later");
         }
@@ -87,7 +99,7 @@ public class OrderService {
         Span inventoryServiceClient = tracer.nextSpan()
             .name("InventoryServiceClient");
 
-        try (Tracer.SpanInScope spanInScope = tracer.withSpanInScope(inventoryServiceClient.start())) {
+        try (Tracer.SpanInScope ignored = tracer.withSpanInScope(inventoryServiceClient.start())) {
             inStockList = inventoryClient.isInStock(skuCodes);
         } finally {
             inventoryServiceClient.finish();
@@ -111,11 +123,20 @@ public class OrderService {
     public void sendTestEvent() {
         // in order to test go to terminal of Kafka broker container and run command:
         // > kafka-console-consumer --topic codeTopic --from-beginning --bootstrap-server localhost:9092
-        kafkaTemplate.send(
-            "codeTopic",
-            String.valueOf(Instant.now()
-                .toEpochMilli()),
-            new OrderPlacedEvent("999-list")
-        );
+
+        try (InputStream inputStream = TypeReference.class.getClassLoader()
+            .getResourceAsStream("data/order_placed_event.json")) {
+            OrderPlacedEvent orderPlacedEvent = new ObjectMapper().readValue(inputStream, OrderPlacedEvent.class);
+            log.info("Reading from JSON data: {}", orderPlacedEvent);
+
+            notificationProducer.sendNotification(
+                orderPlacedEvent,
+                String.valueOf(Instant.now()
+                    .toEpochMilli()),
+                "codeTopic"
+            );
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to load JSON data", e);
+        }
     }
 }

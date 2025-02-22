@@ -1,12 +1,17 @@
 package org.thivernale.orderservice.event;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import org.thivernale.orderservice.dto.CustomerResponse;
+import org.thivernale.orderservice.dto.OrderLineItemDto;
+import org.thivernale.orderservice.model.PaymentMethod;
 
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-public class OrderPlacedEvent {
-    private String orderNumber;
+import java.math.BigDecimal;
+import java.util.List;
+
+public record OrderPlacedEvent(
+    String orderReference,
+    BigDecimal totalAmount,
+    PaymentMethod paymentMethod,
+    CustomerResponse customer,
+    List<OrderLineItemDto> products
+) {
 }

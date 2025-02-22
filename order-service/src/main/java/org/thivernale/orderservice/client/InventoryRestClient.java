@@ -22,14 +22,13 @@ public class InventoryRestClient {
         Span inventoryServiceLookup = tracer.nextSpan()
             .name("InventoryServiceLookup");
 
-        try (Tracer.SpanInScope spanInScope = tracer.withSpanInScope(inventoryServiceLookup.start())) {
+        try (Tracer.SpanInScope ignored = tracer.withSpanInScope(inventoryServiceLookup.start())) {
             return restClientBuilder.build()
                 .get()
-                .uri("http://inventory-service/api/inventory", uriBuilder -> uriBuilder.queryParam("sku-code",
-                        skuCodes)
+                .uri("http://inventory-service/api/inventory", uriBuilder -> uriBuilder.queryParam("sku-code", skuCodes)
                     .build())
                 .retrieve()
-                .body(new ParameterizedTypeReference<List<InventoryResponse>>() {
+                .body(new ParameterizedTypeReference<>() {
                 });
         } finally {
             inventoryServiceLookup.finish();

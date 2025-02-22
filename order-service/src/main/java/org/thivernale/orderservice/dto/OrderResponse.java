@@ -15,7 +15,6 @@ import java.util.List;
 @Data
 public class OrderResponse {
     private Long id;
-    private String orderNumber;
     private String reference;
     private BigDecimal totalAmount;
     private PaymentMethod paymentMethod;

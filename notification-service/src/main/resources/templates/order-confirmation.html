@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <title>Order Confirmation</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      color: #333;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f4;
+    }
+
+    .email-container {
+      width: 100%;
+      max-width: 600px;
+      margin: 0 auto;
+      background-color: #ffffff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .header h1 {
+      color: #4CAF50;
+    }
+
+    .order-summary {
+      margin-bottom: 20px;
+    }
+
+    .order-summary h3 {
+      margin: 0 0 10px;
+      font-size: 18px;
+      color: #333;
+    }
+
+    .order-summary p {
+      margin: 0;
+    }
+
+    .products-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+
+    .products-table th, .products-table td {
+      padding: 10px;
+      border: 1px solid #ddd;
+      text-align: left;
+    }
+
+    .products-table th {
+      background-color: #f4f4f4;
+    }
+
+    .total-amount {
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .footer {
+      text-align: center;
+      font-size: 12px;
+      color: #888;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+<div class="email-container">
+  <div class="header">
+    <h1>Thank You for Your Order!</h1>
+  </div>
+
+  <div class="order-summary">
+    <h3>Order Confirmation</h3>
+    <p>Hello <strong th:text="${customerName}">[Customer Name]</strong>,</p>
+    <p>Thank you for your order! We are pleased to confirm that your order has been successfully placed.</p>
+    <p><strong>Order Reference:</strong> <span th:text="${orderReference}">[Order Reference]</span></p>
+  </div>
+
+  <div class="products">
+    <h3>Order Details:</h3>
+    <table class="products-table">
+      <thead>
+      <tr>
+        <th>Product Name</th>
+        <th>Quantity</th>
+        <th>Price</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr th:each="product : ${products}">
+        <td th:text="${product.name}">[Product Name]</td>
+        <td th:text="${product.quantity}">[Quantity]</td>
+        <td th:text="${product.price}">[Price]</td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="total-amount">
+    <p><strong>Total Amount: </strong><span th:text="${totalAmount}">[Total Amount]</span></p>
+  </div>
+
+  <div class="footer">
+    <p>If you have any questions, feel free to contact our support team.</p>
+    <p>Thank you for shopping with us!</p>
+  </div>
+</div>
+</body>
+</html>

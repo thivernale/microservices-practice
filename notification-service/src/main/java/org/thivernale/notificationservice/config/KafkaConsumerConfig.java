@@ -12,7 +12,7 @@ import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
-import org.thivernale.notificationservice.event.OrderPlacedEvent;
+import org.thivernale.notificationservice.notification.event.OrderPlacedEvent;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -31,16 +31,16 @@ public class KafkaConsumerConfig {
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootStrapServers);
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, "notificationId");
-        props.put(JsonDeserializer.TYPE_MAPPINGS, "event:org.thivernale.notificationservice.event.OrderPlacedEvent");
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, "orderGroup,paymentGroup");
+        props.put(JsonDeserializer.TYPE_MAPPINGS, "orderPlacedEvent:org.thivernale.notificationservice.notification" +
+            ".event" +
+            ".OrderPlacedEvent,paymentEvent:org.thivernale.notificationservice.notification.event.PaymentEvent");
 
         return props;
     }
 
     /**
      * Construct a consumer factory with the provided configuration
-     *
-     * @return
      */
     @Bean
     public ConsumerFactory<String, OrderPlacedEvent> consumerFactory() {

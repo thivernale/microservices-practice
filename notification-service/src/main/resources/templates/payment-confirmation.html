@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <title>Payment Confirmation</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      color: #333;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f4;
+    }
+
+    .email-container {
+      width: 100%;
+      max-width: 600px;
+      margin: 0 auto;
+      background-color: #ffffff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .header h1 {
+      color: #4CAF50;
+    }
+
+    .payment-summary {
+      margin-bottom: 20px;
+    }
+
+    .payment-summary h3 {
+      margin: 0 0 10px;
+      font-size: 18px;
+      color: #333;
+    }
+
+    .payment-summary p {
+      margin: 0;
+    }
+
+    .amount {
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .footer {
+      text-align: center;
+      font-size: 12px;
+      color: #888;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+<div class="email-container">
+  <div class="header">
+    <h1>Payment Successful!</h1>
+  </div>
+
+  <div class="payment-summary">
+    <h3>Payment Confirmation</h3>
+    <p>Hello <strong th:text="${customerName}">[Customer Name]</strong>,</p>
+    <p>We are pleased to inform you that your payment has been successfully processed.</p>
+    <p><strong>Order Reference:</strong> <span th:text="${orderReference}">[Order Reference]</span></p>
+  </div>
+
+  <div class="amount">
+    <p><strong>Amount Paid: </strong><span th:text="${amount}">[Amount]</span></p>
+  </div>
+
+  <div class="footer">
+    <p>If you have any questions, please contact our support team.</p>
+    <p>Thank you for your payment and for choosing us!</p>
+  </div>
+</div>
+</body>
+</html>

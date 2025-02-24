@@ -52,8 +52,8 @@ public class OrderController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public void createOrder(@RequestBody @Valid OrderRequest orderRequest) {
-        orderService.placeOrder(orderRequest);
+    public Long createOrder(@RequestBody @Valid OrderRequest orderRequest) {
+        return orderService.placeOrder(orderRequest);
     }
 
     @PostMapping("check-availability")

@@ -45,7 +45,7 @@ public class OrderService {
     private final PaymentClient paymentClient;
     private final NotificationProducer notificationProducer;
 
-    public void placeOrder(OrderRequest orderRequest) {
+    public Long placeOrder(OrderRequest orderRequest) {
         var customer = customerClient.findById(orderRequest.getCustomerId())
             .orElseThrow(() -> new BusinessException("Customer not found"));
 
@@ -59,38 +59,40 @@ public class OrderService {
         boolean allProductsInStock = skuCodes.size() == inventoryResponseList.size() && inventoryResponseList.stream()
             .allMatch(InventoryResponse::inStock);
 
-        if (allProductsInStock) {
-            Order order = orderMapper.toOrder(orderRequest);
-            if (Strings.isBlank(order.getReference())) {
-                order.setReference(UUID.randomUUID()
-                    .toString());
-            }
-            order.setItems(orderRequest.getItems()
-                .stream()
-                .map(orderMapper::toOrderLineItem)
-                .peek(orderLineItem -> orderLineItem.setOrder(order))
-                .toList());
-
-            orderRepository.save(order);
-
-            paymentClient.createPayment(new PaymentRequest(
-                order.getTotalAmount(),
-                order.getPaymentMethod(),
-                order.getId(),
-                orderRequest.getReference(),
-                customer
-            ));
-
-            notificationProducer.sendNotification(new OrderPlacedEvent(
-                order.getReference(),
-                order.getTotalAmount(),
-                order.getPaymentMethod(),
-                customer,
-                orderRequest.getItems()
-            ));
-        } else {
+        if (!allProductsInStock) {
             throw new BusinessException("Product is not in stock, please try again later");
         }
+
+        Order order = orderMapper.toOrder(orderRequest);
+        if (Strings.isBlank(order.getReference())) {
+            order.setReference(UUID.randomUUID()
+                .toString());
+        }
+        order.setItems(orderRequest.getItems()
+            .stream()
+            .map(orderMapper::toOrderLineItem)
+            .peek(orderLineItem -> orderLineItem.setOrder(order))
+            .toList());
+
+        orderRepository.save(order);
+
+        paymentClient.createPayment(new PaymentRequest(
+            order.getId(),
+            order.getReference(),
+            order.getTotalAmount(),
+            order.getPaymentMethod(),
+            customer
+        ));
+
+        notificationProducer.sendNotification(new OrderPlacedEvent(
+            order.getReference(),
+            order.getTotalAmount(),
+            order.getPaymentMethod(),
+            customer,
+            orderRequest.getItems()
+        ));
+
+        return order.getId();
     }
 
     public List<InventoryResponse> checkAvailability(List<String> skuCodes) {

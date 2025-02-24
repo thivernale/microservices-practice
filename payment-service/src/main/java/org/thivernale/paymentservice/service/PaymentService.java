@@ -20,6 +20,7 @@ public class PaymentService {
 
     public Long createPayment(@Valid PaymentRequest paymentRequest) {
         Payment payment = paymentRepository.save(paymentMapper.toPayment(paymentRequest));
+
         notificationProducer.sendNotification(new PaymentEvent(
             paymentRequest.orderReference(),
             paymentRequest.amount(),

@@ -1,0 +1,71 @@
+### Get access token from Keycloak
+POST http://localhost:8180/realms/spring-boot-microservices-realm/protocol/openid-connect/token
+Content-Type: application/x-www-form-urlencoded
+
+client_id = {{CLIENT_ID}} &
+client_secret = {{CLIENT_SECRET}} &
+grant_type = client_credentials
+
+> {%
+  client.global.set("kc_access_token", response.body.access_token);
+%}
+
+### Create customer
+POST http://localhost:8080/api/customer
+Authorization: Bearer {{kc_access_token}}
+Content-Type: application/json
+
+{
+  "firstName": "Jane",
+  "lastName": "Doe",
+  "email": "jdoe@example.com",
+  "address": {
+    "street": "West Dane St - Unit ABC Beverly",
+    "houseNumber": "54",
+    "zipCode": "MA 01915 USA"
+  }
+}
+
+> {%
+  client.global.set("customer_id", response.body);
+%}
+
+### Read customer
+GET http://localhost:8080/api/customer/{{customer_id}}
+Authorization: Bearer {{kc_access_token}}
+
+### Read existing orders
+GET http://localhost:8080/api/order
+Authorization: Bearer {{kc_access_token}}
+
+### Create order for customer
+POST http://localhost:8080/api/order
+Content-Type: application/json
+Authorization: Bearer {{kc_access_token}}
+
+{
+  "customerId": "{{customer_id}}",
+  "paymentMethod": "VISA",
+  "totalAmount": 200.0,
+  "items": [
+    {
+      "skuCode": "A001",
+      "quantity": 4,
+      "productId": "67ab467d00832278c76c3453",
+      "price": 25.0
+    }, {
+      "skuCode": "B001",
+      "quantity": 1,
+      "productId": "67704cb73162f825346f5571",
+      "price": 100
+    }
+  ]
+}
+
+> {%
+  client.global.set("order_id", response.body);
+%}
+
+### Read order
+GET http://localhost:8080/api/order/{{order_id}}
+Authorization: Bearer {{kc_access_token}}

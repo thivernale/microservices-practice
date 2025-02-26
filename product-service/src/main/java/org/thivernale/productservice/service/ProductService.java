@@ -17,8 +17,9 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final ProductMapper productMapper;
 
-    public void createProduct(ProductRequest productRequest) {
-        productRepository.save(productMapper.toProduct(productRequest));
+    public String createProduct(ProductRequest productRequest) {
+        return productRepository.save(productMapper.toProduct(productRequest))
+            .getId();
     }
 
     public List<ProductResponse> getAllProducts() {

@@ -1,19 +1,14 @@
 package org.thivernale.productservice.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.AutoConfigureDataMongo;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -29,10 +24,16 @@ import org.thivernale.productservice.service.ProductMapper;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.anything;
+import static org.hamcrest.Matchers.equalTo;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.http.MediaType.TEXT_PLAIN;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Testcontainers
 @AutoConfigureMockMvc
 @AutoConfigureDataMongo
@@ -40,8 +41,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class ProductControllerTest {
 
     @Container
-    static MongoDBContainer mongoDBContainer =
-        new MongoDBContainer(DockerImageName.parse("mongo:latest"))
+    static MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:latest"))
             /*.withCopyFileToContainer(
                 MountableFile.forClasspathResource("init-schema.js"),
                 "/docker-entrypoint-initdb.d/init-script.js")*/;
@@ -68,59 +68,50 @@ class ProductControllerTest {
 
     @Test
     public void shouldBeRunning() {
-        assertTrue(mongoDBContainer.isCreated());
-        assertTrue(mongoDBContainer.isRunning());
+        assertThat(mongoDBContainer.isCreated()).isTrue();
+        assertThat(mongoDBContainer.isRunning()).isTrue();
     }
 
     @Test
     public void shouldCreateProduct() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.post("/api/product")
-                .contentType(MediaType.APPLICATION_JSON)
+        mockMvc.perform(post("/api/product")
+                .contentType(APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(getProductRequest())))
-            .andExpect(MockMvcResultMatchers.status()
-                .isCreated());
+            .andExpect(status().isCreated())
+            .andExpect(content().contentTypeCompatibleWith(TEXT_PLAIN))
+            .andExpect(content().string(anything()));
 
-        assertEquals(1, productRepository.findAll()
-            .size());
+        assertThat(productRepository.findAll()
+            .size()).isEqualTo(1);
     }
 
     @Test
     public void shouldGetEmptyListOfProducts() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.get("/api/product"))
-            .andExpect(MockMvcResultMatchers.status()
-                .isOk())
-            .andExpect(MockMvcResultMatchers.content()
-                .json("[]"));
+        mockMvc.perform(get("/api/product"))
+            .andExpect(status().isOk())
+            .andExpect(content().json("[]"));
     }
 
     @Test
-    // Why would one do this against mongodb anyway?
-    /*@Sql(
-        statements = {"SELECT 1;"},
-        executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD,
-        config = @SqlConfig(transactionMode = SqlConfig.TransactionMode.DEFAULT),
-        scripts = {}
-    )*/
     public void shouldGetListOfProducts() throws Exception {
-
         Product product = productMapper.toProduct(getProductRequest());
         Category category = categoryRepository.save(product.getCategory());
         product.setCategory(category);
         productRepository.save(product);
 
-        mockMvc.perform(MockMvcRequestBuilders.get("/api/product"))
-            .andExpect(MockMvcResultMatchers.status()
-                .isOk())
-            .andExpect(MockMvcResultMatchers.jsonPath("$.length()", Matchers.equalTo(1)))
-            .andExpect(MockMvcResultMatchers.jsonPath("$[0].id", Matchers.anything()))
-            .andExpect(MockMvcResultMatchers.jsonPath("$[0].name", Matchers.equalTo(product.getName())))
-            .andExpect(MockMvcResultMatchers.jsonPath("$[0].description", Matchers.equalTo(product.getDescription())))
-            .andExpect(MockMvcResultMatchers.jsonPath("$[0].categoryId", Matchers.equalTo(product.getCategory()
+        mockMvc.perform(get("/api/product"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.length()", equalTo(1)))
+            .andExpect(jsonPath("$[0].id", anything()))
+            .andExpect(jsonPath("$[0].name", equalTo(product.getName())))
+            .andExpect(jsonPath("$[0].description", equalTo(product.getDescription())))
+            .andExpect(jsonPath("$[0].categoryId", equalTo(product.getCategory()
                 .getId()
                 .intValue())))
-            .andExpect(MockMvcResultMatchers.jsonPath("$[0].price", Matchers.equalTo(product.getPrice()
+            .andExpect(jsonPath("$[0].price", equalTo(product.getPrice()
                 .intValue())))
-            .andDo(MockMvcResultHandlers.print());
+        //.andDo(print())
+        ;
     }
 
     private ProductRequest getProductRequest() {

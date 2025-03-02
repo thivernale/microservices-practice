@@ -25,7 +25,7 @@ public class InventoryRestClient {
         try (Tracer.SpanInScope ignored = tracer.withSpanInScope(inventoryServiceLookup.start())) {
             return restClientBuilder.build()
                 .get()
-                .uri("http://inventory-service/api/inventory", uriBuilder -> uriBuilder.queryParam("sku-code", skuCodes)
+                .uri("http://INVENTORY-SERVICE/api/inventory", uriBuilder -> uriBuilder.queryParam("sku-code", skuCodes)
                     .build())
                 .retrieve()
                 .body(new ParameterizedTypeReference<>() {

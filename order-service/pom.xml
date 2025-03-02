@@ -62,11 +62,19 @@
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-openfeign</artifactId>
         </dependency>
-        <!--<dependency>
+        <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-contract-wiremock</artifactId>
+            <exclusions>
+                <exclusion>
+                    <!--
+                    excluded because a newer version is provided by wiremock-spring-boot-starter
+                    https://mvnrepository.com/artifact/org.springframework.cloud/spring-cloud-contract-wiremock/4.2.0 -->
+                    <groupId>com.github.tomakehurst</groupId>
+                    <artifactId>wiremock-jre8-standalone</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
--->
 
         <dependency>
             <groupId>org.flywaydb</groupId>
@@ -87,6 +95,11 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.springframework.kafka</groupId>
+            <artifactId>spring-kafka-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>com.epages</groupId>
             <artifactId>wiremock-spring-boot-starter</artifactId>
             <version>1.0.0</version>
@@ -102,6 +115,21 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-testcontainers</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>kafka</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>mysql</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

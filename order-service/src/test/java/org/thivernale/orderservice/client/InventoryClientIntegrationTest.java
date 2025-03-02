@@ -23,7 +23,7 @@ public class InventoryClientIntegrationTest extends BaseClientIntegrationTest {
 
     @BeforeEach
     void setUp() throws IOException {
-        setupMockInventoryAvailabilityResponse(this.mockServer);
+        setupMockInventoryAvailabilityResponse(mockServer);
         setupMockInventoryAvailabilityResponse(mockServer2);
     }
 

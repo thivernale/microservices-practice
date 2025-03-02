@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Import;
 @EnableAutoConfiguration
 @Import({WireMockConfig.class})
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class BaseClientIntegrationTest {
+public abstract class BaseClientIntegrationTest {
     @Autowired
     protected WireMockServer mockServer;
     @Autowired

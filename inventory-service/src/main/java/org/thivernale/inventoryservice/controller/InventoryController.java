@@ -7,6 +7,7 @@ import org.thivernale.inventoryservice.dto.InventoryResponse;
 import org.thivernale.inventoryservice.service.InventoryService;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/inventory")
@@ -15,9 +16,12 @@ public class InventoryController {
 
     private final InventoryService inventoryService;
 
-    @GetMapping
+    @PostMapping
     @ResponseStatus(HttpStatus.OK)
-    public List<InventoryResponse> isInStock(@RequestParam("sku-code") List<String> skuCode) {
-        return inventoryService.isInStock(skuCode);
+    public List<InventoryResponse> isInStock(
+        @RequestBody Map<String, Double> inventoryRequestMap,
+        @RequestParam(name = "reserve", defaultValue = "false", required = false) boolean reserve
+    ) {
+        return inventoryService.isInStock(inventoryRequestMap, reserve);
     }
 }

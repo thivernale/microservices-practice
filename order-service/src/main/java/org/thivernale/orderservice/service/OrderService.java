@@ -25,7 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.time.Instant;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -49,15 +49,15 @@ public class OrderService {
         var customer = customerClient.findById(orderRequest.getCustomerId())
             .orElseThrow(() -> new BusinessException("Customer not found"));
 
-        // check availability
-        Set<String> skuCodes = orderRequest.getItems()
+        Map<String, Double> inventoryRequestMap = orderRequest.getItems()
             .stream()
-            .map(OrderLineItemDto::getSkuCode)
-            .collect(Collectors.toSet());
-        List<InventoryResponse> inventoryResponseList = inventoryRestClient.fetchInventory(skuCodes);
+            .collect(Collectors.toMap(OrderLineItemDto::getSkuCode, OrderLineItemDto::getQuantity));
 
-        boolean allProductsInStock = skuCodes.size() == inventoryResponseList.size() && inventoryResponseList.stream()
-            .allMatch(InventoryResponse::inStock);
+        List<InventoryResponse> inventoryResponseList = getInventoryResponseList(inventoryRequestMap, true);
+
+        boolean allProductsInStock =
+            inventoryRequestMap.size() == inventoryResponseList.size() && inventoryResponseList.stream()
+                .allMatch(InventoryResponse::inStock);
 
         if (!allProductsInStock) {
             throw new BusinessException("Product is not in stock, please try again later");
@@ -95,14 +95,18 @@ public class OrderService {
         return order.getId();
     }
 
-    public List<InventoryResponse> checkAvailability(List<String> skuCodes) {
+    public List<InventoryResponse> getInventoryResponseList(Map<String, Double> inventoryRequestMap, boolean reserve) {
+        return inventoryRestClient.fetchInventory(inventoryRequestMap, reserve);
+    }
+
+    public List<InventoryResponse> checkAvailability(Map<String, Double> inventoryRequestMap) {
         List<InventoryResponse> inStockList;
 
         Span inventoryServiceClient = tracer.nextSpan()
             .name("InventoryServiceClient");
 
         try (Tracer.SpanInScope ignored = tracer.withSpanInScope(inventoryServiceClient.start())) {
-            inStockList = inventoryClient.isInStock(skuCodes);
+            inStockList = inventoryClient.isInStock(inventoryRequestMap, false);
         } finally {
             inventoryServiceClient.finish();
         }

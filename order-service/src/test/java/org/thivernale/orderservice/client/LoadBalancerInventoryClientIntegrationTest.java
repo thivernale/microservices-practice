@@ -29,6 +29,7 @@ import java.util.List;
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.assertj.core.api.BDDAssertions.then;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.thivernale.orderservice.client.ClientTestDataUtil.getInventoryRequestMap;
 import static org.thivernale.orderservice.client.OrderMocks.setupMockInventoryAvailabilityResponse;
 
 @SpringBootTest(classes = {TestConfig.class, InventoryClient.class})
@@ -72,19 +73,19 @@ public class LoadBalancerInventoryClientIntegrationTest {
     @Test
     public void whenCheckAvailability_thenRequestsAreLoadBalanced() {
         for (int i = 0; i < 10; i++) {
-            inventoryClient.isInStock(List.of("001", "002"));
+            inventoryClient.isInStock(getInventoryRequestMap(), false);
         }
 
-        mockServer.verify(moreThan(0), getRequestedFor(urlPathEqualTo("/api/inventory")));
-        mockServer2.verify(moreThan(0), getRequestedFor(urlPathEqualTo("/api/inventory")));
+        mockServer.verify(moreThan(0), postRequestedFor(urlPathEqualTo("/api/inventory")));
+        mockServer2.verify(moreThan(0), postRequestedFor(urlPathEqualTo("/api/inventory")));
     }
 
     @Test
     public void whenCheckAvailability_thenTheCorrectAvailabilityShouldBeReturned() {
-        assertTrue(inventoryClient.isInStock(List.of("001", "002"))
+        assertTrue(inventoryClient.isInStock(getInventoryRequestMap(), false)
             .containsAll(List.of(
-                new InventoryResponse("001", true, 200),
-                new InventoryResponse("002", false, 0)
+                new InventoryResponse("001", 200, true),
+                new InventoryResponse("002", 0, false)
             )));
     }
 
@@ -106,7 +107,7 @@ public class LoadBalancerInventoryClientIntegrationTest {
             (ReactorLoadBalancer<ServiceInstance>) reactiveLoadBalancer;
 
         for (int i = 0; i < 10; i++) {
-            inventoryClient.isInStock(List.of("001", "002"));
+            inventoryClient.isInStock(getInventoryRequestMap(), false);
         }
 
         // order dependent on seedPosition -1 of RoundRobinLoadBalancer
@@ -114,8 +115,8 @@ public class LoadBalancerInventoryClientIntegrationTest {
 
         assertLoadBalancer(loadBalancer, hosts);
 
-        mockServer.verify(moreThan(0), getRequestedFor(urlPathEqualTo("/api/inventory")));
-        mockServer2.verify(moreThan(0), getRequestedFor(urlPathEqualTo("/api/inventory")));
+        mockServer.verify(moreThan(0), postRequestedFor(urlPathEqualTo("/api/inventory")));
+        mockServer2.verify(moreThan(0), postRequestedFor(urlPathEqualTo("/api/inventory")));
     }
 
     private void assertLoadBalancer(ReactorLoadBalancer<ServiceInstance> loadBalancer, List<String> hosts) {

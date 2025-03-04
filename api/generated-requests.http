@@ -38,6 +38,30 @@ Authorization: Bearer {{kc_access_token}}
 GET http://localhost:8080/api/order
 Authorization: Bearer {{kc_access_token}}
 
+### Check product availablity
+POST http://localhost:8080/api/order/check-availability
+Content-Type: application/json
+Authorization: Bearer {{kc_access_token}}
+
+{
+  "customerId": "{{customer_id}}",
+  "paymentMethod": "VISA",
+  "totalAmount": 200.0,
+  "items": [
+    {
+      "skuCode": "A001",
+      "quantity": 4,
+      "productId": "67ab467d00832278c76c3453",
+      "price": 25.0
+    }, {
+      "skuCode": "B001",
+      "quantity": 1,
+      "productId": "67704cb73162f825346f5571",
+      "price": 100
+    }
+  ]
+}
+
 ### Create order for customer
 POST http://localhost:8080/api/order
 Content-Type: application/json

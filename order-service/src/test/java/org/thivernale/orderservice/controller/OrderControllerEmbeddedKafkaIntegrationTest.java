@@ -54,8 +54,8 @@ public class OrderControllerEmbeddedKafkaIntegrationTest {
     @Test
     void shouldCheckAvailability() {
 
-        List<InventoryResponse> responseList = createInventoryResponseList();
-        setupMockGetInventoryAvailability(wireMockServer, "ITEM-123", responseList);
+        List<InventoryResponse> inventoryResponseList = getInventoryResponseList();
+        setupMockGetInventoryAvailability(wireMockServer, getInventoryRequestMap(), inventoryResponseList);
 
         ResponseEntity<List<InventoryResponse>> responseEntity = restTemplate.exchange(
             uri("/api/order/check-availability"),
@@ -66,7 +66,7 @@ public class OrderControllerEmbeddedKafkaIntegrationTest {
 
         assertThat(responseEntity.getStatusCode())
             .isEqualTo(HttpStatus.OK);
-        assertThat(responseEntity.getBody()).isEqualTo(responseList);
+        assertThat(responseEntity.getBody()).isEqualTo(inventoryResponseList);
     }
 
     @Test
@@ -87,7 +87,7 @@ public class OrderControllerEmbeddedKafkaIntegrationTest {
     @Test
     public void whenOrderInputValid_thenCreateOrderShouldSucceed() {
         setupMockGetCustomer(wireMockServer, "67bc84af1e856a7494958bd3", createCustomer());
-        setupMockGetInventoryAvailability(wireMockServer, "ITEM-123", createInventoryResponseList());
+        setupMockGetInventoryAvailability(wireMockServer, getInventoryRequestMap(), getInventoryResponseList());
         setupMockCreatePayment(wireMockServer);
 
         OrderRequest orderRequest = createOrderRequest();

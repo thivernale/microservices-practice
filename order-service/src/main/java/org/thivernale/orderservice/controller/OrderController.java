@@ -20,6 +20,7 @@ import org.thivernale.orderservice.service.OrderService;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/order")
@@ -60,8 +61,7 @@ public class OrderController {
     public List<InventoryResponse> checkAvailability(@RequestBody OrderRequest orderRequest) {
         return orderService.checkAvailability(orderRequest.getItems()
             .stream()
-            .map(OrderLineItemDto::getSkuCode)
-            .toList());
+            .collect(Collectors.toMap(OrderLineItemDto::getSkuCode, OrderLineItemDto::getQuantity)));
     }
 
     @GetMapping

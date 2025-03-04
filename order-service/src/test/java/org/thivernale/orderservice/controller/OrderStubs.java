@@ -1,39 +1,30 @@
 package org.thivernale.orderservice.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.WireMockServer;
-import com.github.tomakehurst.wiremock.matching.AnythingPattern;
+import com.github.tomakehurst.wiremock.common.Json;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
-import com.github.tomakehurst.wiremock.matching.MultiValuePattern;
 import org.thivernale.orderservice.dto.CustomerResponse;
 import org.thivernale.orderservice.dto.InventoryResponse;
 
 import java.util.List;
+import java.util.Map;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
-import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
-import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.http.MediaType.TEXT_PLAIN_VALUE;
 
 public class OrderStubs {
-    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     public static void setupMockGetInventoryAvailability(
         WireMockServer mockServer,
-        String skuCode,
+        Map<String, Double> inventoryRequestMap,
         List<InventoryResponse> inventoryResponseList
     ) {
-        mockServer.stubFor(get(urlPathEqualTo("/api/inventory"))
-            //.withQueryParam("sku-code", new EqualToPattern(skuCode))
-            .withQueryParam("sku-code", MultiValuePattern.of(new AnythingPattern()))
-            .willReturn(aResponse()
-                .withStatus(OK.value())
-                .withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
-                .withBody(writeValueAsString(inventoryResponseList))
-            )
+        mockServer.stubFor(post(urlPathEqualTo("/api/inventory"))
+            //.withQueryParam("reserve", new AnythingPattern())
+            .withRequestBody(equalToJson(Json.write(inventoryRequestMap)))
+            .willReturn(jsonResponse(inventoryResponseList, OK.value()))
         );
     }
 
@@ -44,11 +35,7 @@ public class OrderStubs {
     ) {
         mockServer.stubFor(get(urlPathTemplate("/api/customer/{id}"))
             .withPathParam("id", new EqualToPattern(customerId))
-            .willReturn(aResponse()
-                .withStatus(OK.value())
-                .withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
-                .withBody(writeValueAsString(customerResponse))
-            )
+            .willReturn(jsonResponse(customerResponse, OK.value()))
         );
     }
 
@@ -58,8 +45,7 @@ public class OrderStubs {
     ) {
         mockServer.stubFor(get(urlPathTemplate("/api/customer/{id}"))
             .withPathParam("id", new EqualToPattern(id))
-            .willReturn(aResponse()
-                .withStatus(NOT_FOUND.value())
+            .willReturn(notFound()
                 .withHeader(CONTENT_TYPE, TEXT_PLAIN_VALUE)
                 .withBody("Cannot find customer with id %s".formatted(id))
             )
@@ -68,20 +54,7 @@ public class OrderStubs {
 
     public static void setupMockCreatePayment(WireMockServer mockServer) {
         mockServer.stubFor(post(urlPathEqualTo("/api/payment"))
-            .willReturn(aResponse()
-                .withStatus(OK.value())
-                .withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
-                .withBody(Long.valueOf(100L)
-                    .toString())
-            )
+            .willReturn(jsonResponse(100L, OK.value()))
         );
-    }
-
-    private static String writeValueAsString(Object value) {
-        try {
-            return objectMapper.writeValueAsString(value);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
     }
 }

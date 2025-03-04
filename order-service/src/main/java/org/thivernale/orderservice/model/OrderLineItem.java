@@ -19,6 +19,7 @@ public class OrderLineItem {
     private String productId;
     private String skuCode;
     private BigDecimal price;
+    @Column(nullable = false)
     private double quantity;
     @ManyToOne(optional = false, cascade = CascadeType.ALL)
     @JoinColumn(name = "order_id", nullable = false, updatable = false)

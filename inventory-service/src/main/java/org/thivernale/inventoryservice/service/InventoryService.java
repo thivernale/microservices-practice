@@ -5,25 +5,39 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.thivernale.inventoryservice.dto.InventoryResponse;
+import org.thivernale.inventoryservice.model.Inventory;
 import org.thivernale.inventoryservice.repository.InventoryRepository;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class InventoryService {
+
     private final InventoryRepository inventoryRepository;
 
-    @Transactional(readOnly = true)
-    public List<InventoryResponse> isInStock(List<String> skuCode) {
-        return inventoryRepository.findBySkuCodeIn(skuCode)
+    @Transactional
+    public List<InventoryResponse> isInStock(final Map<String, Double> inventoryRequestMap, boolean reserve) {
+
+        List<Inventory> inventoryList = inventoryRepository.findBySkuCodeIn(inventoryRequestMap.keySet());
+
+        List<InventoryResponse> inventoryResponseList = inventoryList
             .stream()
-            .map(inventory -> InventoryResponse.builder()
-                .skuCode(inventory.getSkuCode())
-                .quantity(inventory.getQuantity())
-                .inStock(inventory.getQuantity() > 0)
-                .build())
+            .map(inventory -> new InventoryResponse(
+                    inventory.getSkuCode(),
+                    inventory.getQuantity(),
+                    inventory.getQuantity() >= inventoryRequestMap.get(inventory.getSkuCode())
+                )
+            )
             .toList();
+
+        if (reserve && inventoryResponseList.size() == inventoryRequestMap.size()) {
+            inventoryList.forEach(inventory -> inventory.setQuantity(inventory.getQuantity() - inventoryRequestMap.get(inventory.getSkuCode())));
+            inventoryRepository.saveAll(inventoryList);
+        }
+
+        return inventoryResponseList;
     }
 }

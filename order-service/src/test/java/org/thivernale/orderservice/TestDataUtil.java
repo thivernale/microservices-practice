@@ -5,6 +5,7 @@ import org.thivernale.orderservice.model.PaymentMethod;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 public final class TestDataUtil {
 
@@ -34,8 +35,12 @@ public final class TestDataUtil {
         );
     }
 
-    public static List<InventoryResponse> createInventoryResponseList() {
-        return List.of(new InventoryResponse("ITEM-123", true, 1000));
+    public static Map<String, Double> getInventoryRequestMap() {
+        return java.util.Map.of("ITEM-123", 1.0);
+    }
+
+    public static List<InventoryResponse> getInventoryResponseList() {
+        return List.of(new InventoryResponse("ITEM-123", 1000, true));
     }
 
     public static PaymentRequest createPaymentRequest() {

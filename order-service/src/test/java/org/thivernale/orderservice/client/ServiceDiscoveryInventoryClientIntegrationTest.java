@@ -12,12 +12,12 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
-import org.thivernale.orderservice.dto.InventoryResponse;
 
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.thivernale.orderservice.client.ClientTestDataUtil.getInventoryRequestMap;
+import static org.thivernale.orderservice.client.ClientTestDataUtil.getInventoryResponseList;
 
 @SpringBootTest(
     classes = {MockInventoryServiceConfig.class, InventoryClient.class},
@@ -51,10 +51,7 @@ public class ServiceDiscoveryInventoryClientIntegrationTest {
      */
     @Test
     public void whenCheckAvailability_thenTheCorrectAvailabilityShouldBeReturned() {
-        assertTrue(inventoryClient.isInStock(List.of("001", "002"))
-            .containsAll(List.of(
-                new InventoryResponse("001", true, 200),
-                new InventoryResponse("002", false, 0)
-            )));
+        assertTrue(inventoryClient.isInStock(getInventoryRequestMap(), false)
+            .containsAll(getInventoryResponseList()));
     }
 }

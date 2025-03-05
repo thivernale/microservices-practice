@@ -1,4 +1,4 @@
-package org.thivernale.customerservice;
+package org.thivernale.customerservice.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

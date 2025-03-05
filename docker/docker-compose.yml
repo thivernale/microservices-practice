@@ -122,13 +122,17 @@ services:
       KC_HTTP_ENABLED: true
       KC_HOSTNAME_STRICT_HTTPS: false
       KC_HEALTH_ENABLED: true
-    #      KC_DB: postgres
-    #      KC_DB_URL: jdbc:postgresql://postgres/${POSTGRES_DB}
-    #      KC_DB_USERNAME: ${POSTGRES_USER}
-    #      KC_DB_PASSWORD: ${POSTGRES_PASSWORD}
+    #      KC_DB: mysql
+    #      KC_DB_URL: jdbc:mysql//mysql/keycloak
+    #      KC_DB_USERNAME: ${MYSQL_USER}
+    #      KC_DB_PASSWORD: ${MYSQL_PASSWORD}
     ports:
       - '8180:8080'
-    command: start-dev
+    command: [ "start-dev", "--import-realm" ]
+    volumes:
+      - ../keycloak/:/opt/keycloak/data/import/
+    depends_on:
+      - mysql
 
 volumes:
   mysql_data:

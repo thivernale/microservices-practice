@@ -19,7 +19,7 @@ public class InventoryService {
     private final InventoryRepository inventoryRepository;
 
     @Transactional
-    public List<InventoryResponse> isInStock(final Map<String, Double> inventoryRequestMap, boolean reserve) {
+    public List<InventoryResponse> getInventory(final Map<String, Double> inventoryRequestMap, boolean reserve) {
 
         List<Inventory> inventoryList = inventoryRepository.findBySkuCodeIn(inventoryRequestMap.keySet());
 

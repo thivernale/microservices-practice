@@ -10,10 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.thivernale.orderservice.client.CustomerClient;
-import org.thivernale.orderservice.client.InventoryClient;
-import org.thivernale.orderservice.client.InventoryRestClient;
-import org.thivernale.orderservice.client.PaymentClient;
+import org.thivernale.orderservice.client.*;
 import org.thivernale.orderservice.dto.*;
 import org.thivernale.orderservice.event.OrderPlacedEvent;
 import org.thivernale.orderservice.exception.BusinessException;
@@ -29,6 +26,8 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static org.thivernale.orderservice.client.InventoryClientEnum.REST;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -41,6 +40,7 @@ public class OrderService {
 
     private final InventoryClient inventoryClient;
     private final InventoryRestClient inventoryRestClient;
+    private final InventoryService inventoryService;
     private final CustomerClient customerClient;
     private final PaymentClient paymentClient;
     private final NotificationProducer notificationProducer;
@@ -53,7 +53,7 @@ public class OrderService {
             .stream()
             .collect(Collectors.toMap(OrderLineItemDto::getSkuCode, OrderLineItemDto::getQuantity));
 
-        List<InventoryResponse> inventoryResponseList = getInventoryResponseList(inventoryRequestMap, true);
+        List<InventoryResponse> inventoryResponseList = getInventoryResponseList(inventoryRequestMap, true, REST);
 
         boolean allProductsInStock =
             inventoryRequestMap.size() == inventoryResponseList.size() && inventoryResponseList.stream()
@@ -95,18 +95,29 @@ public class OrderService {
         return order.getId();
     }
 
-    public List<InventoryResponse> getInventoryResponseList(Map<String, Double> inventoryRequestMap, boolean reserve) {
-        return inventoryRestClient.fetchInventory(inventoryRequestMap, reserve);
+    private List<InventoryResponse> getInventoryResponseList(
+        Map<String, Double> inventoryRequestMap,
+        boolean reserve,
+        InventoryClientEnum clientEnum
+    ) {
+        return switch (clientEnum) {
+            case REST -> inventoryRestClient.getInventory(inventoryRequestMap, reserve);
+            case FEIGN -> inventoryClient.getInventory(inventoryRequestMap, reserve);
+            case EXCHANGE -> inventoryService.getInventory(inventoryRequestMap, reserve);
+        };
     }
 
-    public List<InventoryResponse> checkAvailability(Map<String, Double> inventoryRequestMap) {
+    public List<InventoryResponse> checkAvailability(
+        Map<String, Double> inventoryRequestMap,
+        InventoryClientEnum clientEnum
+    ) {
         List<InventoryResponse> inStockList;
 
         Span inventoryServiceClient = tracer.nextSpan()
             .name("InventoryServiceClient");
 
         try (Tracer.SpanInScope ignored = tracer.withSpanInScope(inventoryServiceClient.start())) {
-            inStockList = inventoryClient.isInStock(inventoryRequestMap, false);
+            inStockList = getInventoryResponseList(inventoryRequestMap, false, clientEnum);
         } finally {
             inventoryServiceClient.finish();
         }

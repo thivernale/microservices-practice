@@ -18,10 +18,10 @@ public class InventoryController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.OK)
-    public List<InventoryResponse> isInStock(
+    public List<InventoryResponse> getInventory(
         @RequestBody Map<String, Double> inventoryRequestMap,
         @RequestParam(name = "reserve", defaultValue = "false", required = false) boolean reserve
     ) {
-        return inventoryService.isInStock(inventoryRequestMap, reserve);
+        return inventoryService.getInventory(inventoryRequestMap, reserve);
     }
 }

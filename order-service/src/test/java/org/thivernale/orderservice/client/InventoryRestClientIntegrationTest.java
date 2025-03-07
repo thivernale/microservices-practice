@@ -32,10 +32,10 @@ class InventoryRestClientIntegrationTest extends BaseClientIntegrationTest {
     }
 
     @Test
-    void fetchInventory() {
+    void getInventory() {
         assertThatNoException().isThrownBy(() -> {
             List<InventoryResponse> inventoryResponseList =
-                inventoryRestClient.fetchInventory(getInventoryRequestMap(), true);
+                inventoryRestClient.getInventory(getInventoryRequestMap(), true);
 
             assertThat(inventoryResponseList)
                 .isNotEmpty()

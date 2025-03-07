@@ -29,7 +29,7 @@ class OrderServiceTest {
 
     @BeforeEach
     void setUp() {
-        orderService = new OrderService(null, null, null, null, null, null, null, notificationProducer);
+        orderService = new OrderService(null, null, null, null, null, null, null, null, notificationProducer);
     }
 
     @Test

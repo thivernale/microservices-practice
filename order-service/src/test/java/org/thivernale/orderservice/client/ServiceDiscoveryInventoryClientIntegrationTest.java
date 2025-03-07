@@ -51,7 +51,7 @@ public class ServiceDiscoveryInventoryClientIntegrationTest {
      */
     @Test
     public void whenCheckAvailability_thenTheCorrectAvailabilityShouldBeReturned() {
-        assertTrue(inventoryClient.isInStock(getInventoryRequestMap(), false)
+        assertTrue(inventoryClient.getInventory(getInventoryRequestMap(), false)
             .containsAll(getInventoryResponseList()));
     }
 }

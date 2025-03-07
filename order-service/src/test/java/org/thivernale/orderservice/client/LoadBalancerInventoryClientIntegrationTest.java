@@ -73,7 +73,7 @@ public class LoadBalancerInventoryClientIntegrationTest {
     @Test
     public void whenCheckAvailability_thenRequestsAreLoadBalanced() {
         for (int i = 0; i < 10; i++) {
-            inventoryClient.isInStock(getInventoryRequestMap(), false);
+            inventoryClient.getInventory(getInventoryRequestMap(), false);
         }
 
         mockServer.verify(moreThan(0), postRequestedFor(urlPathEqualTo("/api/inventory")));
@@ -82,7 +82,7 @@ public class LoadBalancerInventoryClientIntegrationTest {
 
     @Test
     public void whenCheckAvailability_thenTheCorrectAvailabilityShouldBeReturned() {
-        assertTrue(inventoryClient.isInStock(getInventoryRequestMap(), false)
+        assertTrue(inventoryClient.getInventory(getInventoryRequestMap(), false)
             .containsAll(List.of(
                 new InventoryResponse("001", 200, true),
                 new InventoryResponse("002", 0, false)
@@ -107,7 +107,7 @@ public class LoadBalancerInventoryClientIntegrationTest {
             (ReactorLoadBalancer<ServiceInstance>) reactiveLoadBalancer;
 
         for (int i = 0; i < 10; i++) {
-            inventoryClient.isInStock(getInventoryRequestMap(), false);
+            inventoryClient.getInventory(getInventoryRequestMap(), false);
         }
 
         // order dependent on seedPosition -1 of RoundRobinLoadBalancer

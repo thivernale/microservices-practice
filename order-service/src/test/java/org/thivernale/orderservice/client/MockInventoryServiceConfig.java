@@ -18,7 +18,7 @@ import java.util.Map;
 @RequestMapping("/api/inventory")
 public class MockInventoryServiceConfig {
     @PostMapping
-    List<InventoryResponse> isInStock(
+    List<InventoryResponse> getInventory(
         @RequestBody Map<String, Double> inventoryRequestMap,
         @RequestParam(name = "reserve", defaultValue = "false", required = false) boolean reserve
     ) throws IOException {

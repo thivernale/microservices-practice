@@ -19,7 +19,7 @@ public class InventoryRestClient {
     private final RestClient.Builder restClientBuilder;
     private final Tracer tracer;
 
-    public List<InventoryResponse> fetchInventory(Map<String, Double> inventoryRequestMap, boolean reserve) {
+    public List<InventoryResponse> getInventory(Map<String, Double> inventoryRequestMap, boolean reserve) {
         Span inventoryServiceLookup = tracer.nextSpan()
             .name("InventoryServiceLookup");
 

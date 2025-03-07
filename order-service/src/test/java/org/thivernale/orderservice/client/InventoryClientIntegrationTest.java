@@ -29,13 +29,13 @@ public class InventoryClientIntegrationTest extends BaseClientIntegrationTest {
 
     @Test
     public void whenCheckAvailability_thenAvailabilityShouldBeReturned() {
-        assertFalse(inventoryClient.isInStock(getInventoryRequestMap(), false)
+        assertFalse(inventoryClient.getInventory(getInventoryRequestMap(), false)
             .isEmpty());
     }
 
     @Test
     public void whenCheckAvailability_thenTheCorrectAvailabilityShouldBeReturned() {
-        assertTrue(inventoryClient.isInStock(getInventoryRequestMap(), false)
+        assertTrue(inventoryClient.getInventory(getInventoryRequestMap(), false)
             .containsAll(getInventoryResponseList()));
     }
 }

@@ -8,6 +8,7 @@ import org.springframework.boot.http.client.ClientHttpRequestFactorySettings;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.support.RestClientAdapter;
 import org.springframework.web.service.invoker.HttpServiceProxyFactory;
@@ -27,16 +28,21 @@ public class WebClientConfig {
     @LoadBalanced
     public RestClient.Builder restClientBuilder(RestClientBuilderConfigurer restClientBuilderConfigurer) {
         return restClientBuilderConfigurer.configure(RestClient.builder()
-            .requestFactory(ClientHttpRequestFactoryBuilder.detect()
-                .build(ClientHttpRequestFactorySettings.defaults()
-                    .withConnectTimeout(Duration.ofSeconds(5))
-                    .withReadTimeout(Duration.ofSeconds(5)))));
+            .requestFactory(clientHttpRequestFactory()));
+    }
+
+    @Bean
+    ClientHttpRequestFactory clientHttpRequestFactory() {
+        return ClientHttpRequestFactoryBuilder.detect()
+            .build(ClientHttpRequestFactorySettings.defaults()
+                .withConnectTimeout(Duration.ofSeconds(5))
+                .withReadTimeout(Duration.ofSeconds(5)));
     }
 
     @Bean
     public InventoryService inventoryService(RestClient.Builder restClientBuilder) {
-        System.out.println(inventoryServiceUrl);
         RestClient restClient = restClientBuilder.baseUrl(inventoryServiceUrl)
+            .requestFactory(clientHttpRequestFactory())
             .build();
         RestClientAdapter restClientAdapter = RestClientAdapter.create(restClient);
         HttpServiceProxyFactory httpServiceProxyFactory = HttpServiceProxyFactory.builderFor(restClientAdapter)

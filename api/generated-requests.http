@@ -93,3 +93,6 @@ Authorization: Bearer {{kc_access_token}}
 ### Read order
 GET http://localhost:8080/api/order/{{order_id}}
 Authorization: Bearer {{kc_access_token}}
+
+### Get order service API documentation
+GET http://localhost:8080/aggregate/order-service/v3/api-docs

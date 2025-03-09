@@ -26,7 +26,8 @@ public class SecurityConfig {
                     "/eureka/**",
                     "/swagger-ui/**",
                     "/v3/api-docs/**",
-                    "/aggregate/**"
+                    "/aggregate/**",
+                    "/actuator/prometheus"
                 )
                 .permitAll()
                 .anyExchange()

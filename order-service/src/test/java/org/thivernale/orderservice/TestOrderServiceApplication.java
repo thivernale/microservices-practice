@@ -12,7 +12,7 @@ public class TestOrderServiceApplication {
     @ServiceConnection
     MySQLContainer<?> mysqlContainer() {
         return new MySQLContainer<>(DockerImageName.parse("mysql:8.3.0"))
-            //.withReuse(true)
+            .withReuse(true)
             ;
     }
 }

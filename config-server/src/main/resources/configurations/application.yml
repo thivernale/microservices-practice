@@ -1,0 +1,22 @@
+# Global defaults shared by all client applications
+management:
+  tracing:
+    sampling:
+      probability: 1.0
+  zipkin:
+    tracing:
+      endpoint: http://${ZIPKIN_HOST:localhost}:9411/api/v2/spans
+  observations:
+    key-values:
+      application: ${spring.application.name}
+  metrics:
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+  endpoint:
+    health:
+      show-details: always
+  endpoints:
+    web:
+      exposure:
+        include: '*'

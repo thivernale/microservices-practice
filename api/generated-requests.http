@@ -96,3 +96,7 @@ Authorization: Bearer {{kc_access_token}}
 
 ### Get order service API documentation
 GET http://localhost:8080/aggregate/order-service/v3/api-docs
+
+### Send test event
+POST http://localhost:8080/api/order/send-test-event
+Authorization: Bearer {{kc_access_token}}

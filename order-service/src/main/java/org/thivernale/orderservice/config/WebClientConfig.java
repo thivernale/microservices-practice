@@ -1,5 +1,6 @@
 package org.thivernale.orderservice.config;
 
+import io.micrometer.observation.ObservationRegistry;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.web.client.RestClientAutoConfiguration;
 import org.springframework.boot.autoconfigure.web.client.RestClientBuilderConfigurer;
@@ -40,9 +41,13 @@ public class WebClientConfig {
     }
 
     @Bean
-    public InventoryService inventoryService(RestClient.Builder restClientBuilder) {
+    public InventoryService inventoryService(
+        RestClient.Builder restClientBuilder,
+        ObservationRegistry observationRegistry
+    ) {
         RestClient restClient = restClientBuilder.baseUrl(inventoryServiceUrl)
             .requestFactory(clientHttpRequestFactory())
+            .observationRegistry(observationRegistry)
             .build();
         RestClientAdapter restClientAdapter = RestClientAdapter.create(restClient);
         HttpServiceProxyFactory httpServiceProxyFactory = HttpServiceProxyFactory.builderFor(restClientAdapter)

@@ -33,7 +33,8 @@ public class InventoryService {
             )
             .toList();
 
-        if (reserve && inventoryResponseList.size() == inventoryRequestMap.size()) {
+        if (reserve && inventoryResponseList.size() == inventoryRequestMap.size() && inventoryResponseList.stream()
+            .allMatch(InventoryResponse::inStock)) {
             inventoryList.forEach(inventory -> inventory.setQuantity(inventory.getQuantity() - inventoryRequestMap.get(inventory.getSkuCode())));
             inventoryRepository.saveAll(inventoryList);
         }

@@ -59,6 +59,7 @@
             <artifactId>spring-boot-starter-aop</artifactId>
         </dependency>
     </dependencies>
+
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -80,4 +81,35 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <image>
+                        <name>thivernale/${project.artifactId}:${project.version}</name>
+                        <publish>false</publish>
+                        <tags>
+                            <tag>thivernale/${project.artifactId}:latest</tag>
+                        </tags>
+                    </image>
+                    <docker>
+                        <publishRegistry>
+                            <username></username>
+                            <password></password>
+                            <url></url>
+                        </publishRegistry>
+                    </docker>
+                    <excludes>
+                        <exclude>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                        </exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>

@@ -156,7 +156,7 @@ services:
     command: [ "-config.file=/etc/tempo.yaml" ]
     volumes:
       - ./tempo/tempo.yml:/etc/tempo.yaml:ro
-      - ./tempo/data:/tmp/tempo
+      - ../data/tempo:/tmp/tempo
     ports:
       - "3110:3100"  # Tempo
       - "9411:9411" # Zipkin

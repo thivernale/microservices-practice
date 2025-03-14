@@ -74,7 +74,7 @@ spec:
   capacity:
     storage: 1Gi
   hostPath:
-    path: "/run/desktop/mnt/host/c/Users/thive/projects/microservices-practice/data/mysql" # ??? where
+    path: "/run/desktop/mnt/host/c/Users/thive/projects/microservices-practice/data/mysql"
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim

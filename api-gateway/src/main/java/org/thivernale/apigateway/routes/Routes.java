@@ -32,7 +32,6 @@ public class Routes {
                         f -> f.setPath("/v3/api-docs")
                             .circuitBreaker(c -> c.setName(url.getName() + "circuitBreaker")
                                 .setFallbackUri("/fallback"))
-                            .rewritePath("/v3/api-docs", "/swagger-ui.html")
                     )
                     .uri("lb://" + url.getUrl()
                         .replaceAll("/aggregate/([\\w-]+)/v3/api-docs", "$1"))));

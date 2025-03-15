@@ -1,11 +1,12 @@
 # Global defaults shared by all client applications
 management:
+  # Distributed Tracing
   tracing:
     sampling:
       probability: 1.0
   zipkin:
     tracing:
-      endpoint: http://${ZIPKIN_HOST:localhost}:9411/api/v2/spans
+      endpoint: http://localhost:9411/api/v2/spans
   observations:
     key-values:
       application: ${spring.application.name}
@@ -20,6 +21,15 @@ management:
     web:
       exposure:
         include: '*'
+
+# Service Discovery
+eureka:
+  instance:
+    hostname: localhost
+  client:
+    service-url:
+      defaultZone: http://${EUREKA_USERNAME:eureka}:${EUREKA_PASSWORD:password}@${EUREKA_HOST:localhost}:8761/eureka
+
 # Own props
 loki:
   url: ${LOKI_URL:http://localhost:3100/loki/api/v1/push}

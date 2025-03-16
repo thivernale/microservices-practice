@@ -42,6 +42,10 @@ spec:
                 configMapKeyRef:
                   key: SPRING_CONFIG_IMPORT
                   name: common-config
+            - name: EUREKA_CLIENT_ENABLED
+              value: 'false'
+            - name: SPRING_JPA_HIBERNATE_DDL-AUTO
+              value: 'update'
 ---
 apiVersion: v1
 kind: Service
@@ -60,4 +64,4 @@ kind: ConfigMap
 metadata:
   name: payment-service-config
 data:
-  SPRING_DATASOURCE_URL: "jdbc:mysql://mysql.default.svc.cluster.local:3306/payment_service"
+  SPRING_DATASOURCE_URL: "jdbc:mysql://mysql.default.svc.cluster.local:3306/payment-service"

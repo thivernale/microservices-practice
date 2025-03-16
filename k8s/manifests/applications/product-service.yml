@@ -27,10 +27,10 @@ spec:
                 configMapKeyRef:
                   key: LOKI_URL
                   name: common-config
-            - name: API-GATEWAY_URL
+            - name: APP_URLS_API-GATEWAY
               valueFrom:
                 configMapKeyRef:
-                  key: API-GATEWAY_URL
+                  key: APP_URLS_API-GATEWAY
                   name: common-config
             - name: MANAGEMENT_ZIPKIN_TRACING_ENDPOINT
               valueFrom:
@@ -42,6 +42,8 @@ spec:
                 configMapKeyRef:
                   key: SPRING_CONFIG_IMPORT
                   name: common-config
+            - name: EUREKA_CLIENT_ENABLED
+              value: 'false'
 ---
 apiVersion: v1
 kind: Service

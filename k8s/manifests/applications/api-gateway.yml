@@ -39,6 +39,28 @@ spec:
                 configMapKeyRef:
                   key: SPRING_CONFIG_IMPORT
                   name: common-config
+            - name: EUREKA_CLIENT_ENABLED
+              value: 'false'
+            - name: APP_URLS_PRODUCT-SERVICE
+              valueFrom:
+                configMapKeyRef:
+                  name: api-gateway-config
+                  key: APP_URLS_PRODUCT-SERVICE
+            - name: APP_URLS_ORDER-SERVICE
+              valueFrom:
+                configMapKeyRef:
+                  name: api-gateway-config
+                  key: APP_URLS_ORDER-SERVICE
+            - name: APP_URLS_CUSTOMER-SERVICE
+              valueFrom:
+                configMapKeyRef:
+                  name: api-gateway-config
+                  key: APP_URLS_CUSTOMER-SERVICE
+            - name: APP_URLS_PAYMENT-SERVICE
+              valueFrom:
+                configMapKeyRef:
+                  name: api-gateway-config
+                  key: APP_URLS_PAYMENT-SERVICE
 ---
 apiVersion: v1
 kind: Service
@@ -58,3 +80,7 @@ metadata:
   name: api-gateway-config
 data:
   SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER-URI: "http://keycloak.default.svc.cluster.local:8180/realms/spring-boot-microservices-realm"
+  APP_URLS_PRODUCT-SERVICE: "http://product-service:8084"
+  APP_URLS_ORDER-SERVICE: "http://order-service:8083"
+  APP_URLS_CUSTOMER-SERVICE: "http://customer-service:8090"
+  APP_URLS_PAYMENT-SERVICE: "http://payment-service:8088"

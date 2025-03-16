@@ -4,7 +4,7 @@ metadata:
   name: common-config
 data:
   LOKI_URL: "http://loki.default.svc.cluster.local:3100/loki/api/v1/push"
-  API-GATEWAY_URL: "http://api-gateway.default.svc.cluster.local:8080"
+  APP_URLS_API-GATEWAY: "http://api-gateway.default.svc.cluster.local:8080"
   MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: "http://tempo.default.svc.cluster.local:9411/api/v2/spans"
-  SPRING_KAFKA_BOOTSTRAP_SERVERS: "broker.default.svc.cluster.local:29092"
+  SPRING_KAFKA_BOOTSTRAP-SERVERS: "broker.default.svc.cluster.local:29092"
   SPRING_CONFIG_IMPORT: "optional:configserver:http://config-server.default.svc.cluster.local:8888"

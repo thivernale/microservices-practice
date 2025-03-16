@@ -33,6 +33,6 @@ eureka:
 # Own props
 loki:
   url: ${LOKI_URL:http://localhost:3100/loki/api/v1/push}
-
-api-gateway:
-  url: ${API_GATEWAY_URL:http://localhost:8080}
+app:
+  urls:
+    api-gateway: http://localhost:8080

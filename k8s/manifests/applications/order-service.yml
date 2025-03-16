@@ -32,10 +32,10 @@ spec:
                 configMapKeyRef:
                   key: LOKI_URL
                   name: common-config
-            - name: API-GATEWAY_URL
+            - name: APP_URLS_API-GATEWAY
               valueFrom:
                 configMapKeyRef:
-                  key: API-GATEWAY_URL
+                  key: APP_URLS_API-GATEWAY
                   name: common-config
             - name: MANAGEMENT_ZIPKIN_TRACING_ENDPOINT
               valueFrom:
@@ -47,6 +47,8 @@ spec:
                 configMapKeyRef:
                   key: SPRING_CONFIG_IMPORT
                   name: common-config
+            - name: EUREKA_CLIENT_ENABLED
+              value: 'false'
 #            - name: INVENTORY_SERVICE_URL
 #              valueFrom:
 #                configMapKeyRef:
@@ -75,5 +77,5 @@ kind: ConfigMap
 metadata:
   name: order-service-config
 data:
-  SPRING_DATASOURCE_URL: "jdbc:mysql://mysql.default.svc.cluster.local:3306/order_service"
+  SPRING_DATASOURCE_URL: "jdbc:mysql://mysql.default.svc.cluster.local:3306/order-service"
 #  SPRING_KAFKA_PRODUCER_PROPERTIES_SCHEMA_REGISTRY_URL: "http://schema-registry.default.svc.cluster.local:8083"

@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.ServerResponse;
+import org.thivernale.apigateway.config.RouteConfig;
 
 import static org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE;
 import static org.springframework.web.reactive.function.server.RequestPredicates.path;
@@ -19,6 +20,8 @@ import static org.springframework.web.reactive.function.server.ServerResponse.st
 public class Routes {
 
     private final SwaggerUiConfigProperties swaggerUiConfigProperties;
+
+    private final RouteConfig routeConfig;
 
     @Bean
     RouteLocator customRouteLocator(RouteLocatorBuilder builder) {
@@ -33,11 +36,15 @@ public class Routes {
                             .circuitBreaker(c -> c.setName(url.getName() + "circuitBreaker")
                                 .setFallbackUri("/fallback"))
                     )
-                    .uri("lb://" + url.getUrl()
-                        .replaceAll("/aggregate/([\\w-]+)/v3/api-docs", "$1"))));
+                    .uri(getServiceUri(url.getUrl()))));
 
         return routes
             .build();
+    }
+
+    private String getServiceUri(String swaggerUrl) {
+        return routeConfig.getUrls()
+            .get(swaggerUrl.replaceAll("/aggregate/([\\w-]+)/v3/api-docs", "$1"));
     }
 
     @Bean

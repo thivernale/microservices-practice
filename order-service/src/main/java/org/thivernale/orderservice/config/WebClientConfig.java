@@ -19,7 +19,7 @@ import java.time.Duration;
 
 @Configuration
 public class WebClientConfig {
-    @Value("${inventory.url:http://INVENTORY-SERVICE}")
+    @Value("${app.urls.inventory-service:http://inventory-service}")
     private String inventoryServiceUrl;
 
     /**

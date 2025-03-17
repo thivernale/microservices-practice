@@ -3,6 +3,7 @@ package org.thivernale.orderservice.client;
 import brave.Span;
 import brave.Tracer;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,8 @@ public class InventoryRestClient {
 
     private final RestClient.Builder restClientBuilder;
     private final Tracer tracer;
+    @Value("${app.urls.inventory-service:http://inventory-service}")
+    private String inventoryServiceUrl;
 
     public List<InventoryResponse> getInventory(Map<String, Double> inventoryRequestMap, boolean reserve) {
         Span inventoryServiceLookup = tracer.nextSpan()
@@ -25,7 +28,7 @@ public class InventoryRestClient {
 
         try (Tracer.SpanInScope ignored = tracer.withSpanInScope(inventoryServiceLookup.start())) {
             return restClientBuilder
-                .baseUrl("http://INVENTORY-SERVICE")
+                .baseUrl(inventoryServiceUrl)
                 .build()
                 .post()
                 .uri("/api/inventory", uriBuilder -> uriBuilder.queryParam("reserve", reserve)

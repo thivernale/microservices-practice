@@ -30,9 +30,9 @@ import static org.thivernale.orderservice.controller.OrderStubs.*;
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
     properties = {
-        "spring.cloud.discovery.client.simple.instances.INVENTORY-SERVICE[0].uri=http://localhost:1032",
-        "spring.cloud.discovery.client.simple.instances.CUSTOMER-SERVICE[0].uri=http://localhost:1032",
-        "spring.cloud.discovery.client.simple.instances.PAYMENT-SERVICE[0].uri=http://localhost:1032",
+        "spring.cloud.discovery.client.simple.instances.inventory-service[0].uri=http://localhost:1032",
+        "spring.cloud.discovery.client.simple.instances.customer-service[0].uri=http://localhost:1032",
+        "spring.cloud.discovery.client.simple.instances.payment-service[0].uri=http://localhost:1032",
     }
 )
 @ContextConfiguration(classes = {TestOrderServiceApplication.class, WireMockConfig.class})

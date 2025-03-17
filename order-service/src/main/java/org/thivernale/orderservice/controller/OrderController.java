@@ -67,6 +67,15 @@ public class OrderController {
         );
     }
 
+    @PostMapping("check-availability-rest")
+    public List<InventoryResponse> checkAvailabilityRest(@RequestBody OrderRequest orderRequest) {
+        return orderService.checkAvailability(orderRequest.getItems()
+                .stream()
+                .collect(Collectors.toMap(OrderLineItemDto::getSkuCode, OrderLineItemDto::getQuantity)),
+            InventoryClientEnum.REST
+        );
+    }
+
     @PostMapping("check-availability-exchange")
     public List<InventoryResponse> checkAvailabilityExchange(@RequestBody OrderRequest orderRequest) {
         return orderService.checkAvailability(orderRequest.getItems()

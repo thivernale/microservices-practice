@@ -7,7 +7,7 @@ import org.thivernale.orderservice.dto.CustomerResponse;
 
 import java.util.Optional;
 
-@FeignClient(name = "CUSTOMER-SERVICE", path = "/api/customer/")
+@FeignClient(name = "customer-service", path = "/api/customer/")
 public interface CustomerClient {
     @GetMapping("{id}")
     Optional<CustomerResponse> findById(@PathVariable String id);

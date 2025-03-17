@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.thivernale.orderservice.dto.PaymentRequest;
 
-@FeignClient(name = "PAYMENT-SERVICE", path = "/api/payment")
+@FeignClient(name = "payment-service", path = "/api/payment")
 public interface PaymentClient {
     @PostMapping
     Long createPayment(@RequestBody PaymentRequest paymentRequest);

@@ -56,7 +56,7 @@ public class LoadBalancerInventoryClientIntegrationTest {
         setupMockInventoryAvailabilityResponse(mockServer);
         setupMockInventoryAvailabilityResponse(mockServer2);
 
-        String serviceId = "INVENTORY-SERVICE";
+        String serviceId = "inventory-service";
         RoundRobinLoadBalancer loadBalancer =
             new RoundRobinLoadBalancer(ServiceInstanceListSuppliers.toProvider(serviceId,
                 instance(serviceId, "localhost", 1030, false),
@@ -94,7 +94,7 @@ public class LoadBalancerInventoryClientIntegrationTest {
         setupMockInventoryAvailabilityResponse(mockServer);
         setupMockInventoryAvailabilityResponse(mockServer2);
 
-        String serviceId = "INVENTORY-SERVICE";
+        String serviceId = "inventory-service";
         ReactiveLoadBalancer<ServiceInstance> reactiveLoadBalancer = this.clientFactory.getInstance(serviceId,
             ReactiveLoadBalancer.class, ServiceInstance.class);
 

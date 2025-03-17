@@ -97,7 +97,7 @@ public class LoadBalancerIntegrationTest {
     @EnableCaching
     @LoadBalancerClients(
         value = {@LoadBalancerClient(
-            name = "INVENTORY-SERVICE",
+            name = "inventory-service",
             configuration = InventoryServiceConfig.class
         )}
     )

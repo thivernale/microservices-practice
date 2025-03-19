@@ -6,7 +6,6 @@ import org.springframework.boot.autoconfigure.web.client.RestClientAutoConfigura
 import org.springframework.boot.autoconfigure.web.client.RestClientBuilderConfigurer;
 import org.springframework.boot.http.client.ClientHttpRequestFactoryBuilder;
 import org.springframework.boot.http.client.ClientHttpRequestFactorySettings;
-import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.ClientHttpRequestFactory;
@@ -26,7 +25,7 @@ public class WebClientConfig {
      * See {@link RestClientAutoConfiguration} autoconfigured bean
      */
     @Bean
-    @LoadBalanced
+    //@LoadBalanced
     public RestClient.Builder restClientBuilder(RestClientBuilderConfigurer restClientBuilderConfigurer) {
         return restClientBuilderConfigurer.configure(RestClient.builder()
             .requestFactory(clientHttpRequestFactory()));

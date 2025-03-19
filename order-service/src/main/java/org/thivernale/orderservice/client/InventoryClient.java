@@ -9,7 +9,11 @@ import org.thivernale.orderservice.dto.InventoryResponse;
 import java.util.List;
 import java.util.Map;
 
-@FeignClient(name = "inventory-service", path = "/api/inventory")
+@FeignClient(
+    name = "inventory-service",
+    path = "/api/inventory",
+    url = "${app.urls.inventory-service:http://inventory-service}"
+)
 public interface InventoryClient {
     @PostMapping
     List<InventoryResponse> getInventory(

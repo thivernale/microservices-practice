@@ -49,11 +49,11 @@ spec:
                   name: common-config
             - name: EUREKA_CLIENT_ENABLED
               value: 'false'
-#            - name: INVENTORY_SERVICE_URL
-#              valueFrom:
-#                configMapKeyRef:
-#                  key: INVENTORY_SERVICE_URL
-#                  name: common-config
+            - name: APP_URLS_INVENTORY-SERVICE
+              valueFrom:
+                configMapKeyRef:
+                  key: APP_URLS_INVENTORY-SERVICE
+                  name: order-service-config
 #            - name: SPRING_KAFKA_PRODUCER_PROPERTIES_SCHEMA_REGISTRY_URL
 #              valueFrom:
 #                configMapKeyRef:
@@ -78,4 +78,5 @@ metadata:
   name: order-service-config
 data:
   SPRING_DATASOURCE_URL: "jdbc:mysql://mysql.default.svc.cluster.local:3306/order-service"
-#  SPRING_KAFKA_PRODUCER_PROPERTIES_SCHEMA_REGISTRY_URL: "http://schema-registry.default.svc.cluster.local:8083"
+  #  SPRING_KAFKA_PRODUCER_PROPERTIES_SCHEMA_REGISTRY_URL: "http://schema-registry.default.svc.cluster.local:8083"
+  APP_URLS_INVENTORY-SERVICE: "http://inventory-service.default.svc.cluster.local:8082"

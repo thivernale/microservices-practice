@@ -54,6 +54,16 @@ spec:
                 configMapKeyRef:
                   key: APP_URLS_INVENTORY-SERVICE
                   name: order-service-config
+            - name: APP_URLS_CUSTOMER-SERVICE
+              valueFrom:
+                configMapKeyRef:
+                  key: APP_URLS_CUSTOMER-SERVICE
+                  name: api-gateway-config
+            - name: APP_URLS_PAYMENT-SERVICE
+              valueFrom:
+                configMapKeyRef:
+                  key: APP_URLS_PAYMENT-SERVICE
+                  name: api-gateway-config
 #            - name: SPRING_KAFKA_PRODUCER_PROPERTIES_SCHEMA_REGISTRY_URL
 #              valueFrom:
 #                configMapKeyRef:

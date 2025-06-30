@@ -22,6 +22,7 @@
     </properties>
     <modules>
         <module>api-gateway</module>
+        <module>billing-service</module>
         <module>config-server</module>
         <module>customer-service</module>
         <module>discovery-server</module>

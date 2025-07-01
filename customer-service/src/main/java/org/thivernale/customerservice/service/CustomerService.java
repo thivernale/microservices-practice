@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.thivernale.customerservice.dto.CustomerRequest;
 import org.thivernale.customerservice.dto.CustomerResponse;
 import org.thivernale.customerservice.exception.CustomerNotFoundException;
+import org.thivernale.customerservice.grpc.BillingServiceGrpcClient;
 import org.thivernale.customerservice.model.Customer;
 import org.thivernale.customerservice.repository.CustomerRepository;
 
@@ -17,9 +18,17 @@ public class CustomerService {
 
     private final CustomerRepository customerRepository;
     private final CustomerMapper customerMapper;
+    private final BillingServiceGrpcClient billingServiceGrpcClient;
 
     public String createCustomer(CustomerRequest customerRequest) {
-        return customerRepository.save(customerMapper.toCustomer(customerRequest))
+        Customer customer = customerRepository.save(customerMapper.toCustomer(customerRequest));
+
+        billingServiceGrpcClient.createBillingAccount(
+            customer.getId(),
+            customer.getFirstName() + " " + customer.getLastName(),
+            customer.getEmail());
+
+        return customer
             .getId();
     }
 
@@ -27,6 +36,7 @@ public class CustomerService {
         Customer customer = getCustomerById(id);
 
         mergeCustomer(customer, customerRequest);
+
         customerRepository.save(customer);
     }
 

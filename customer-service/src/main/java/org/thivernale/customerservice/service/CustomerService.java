@@ -3,15 +3,19 @@ package org.thivernale.customerservice.service;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.thivernale.customerservice.dto.CustomerRequest;
 import org.thivernale.customerservice.dto.CustomerResponse;
 import org.thivernale.customerservice.exception.CustomerNotFoundException;
+import org.thivernale.customerservice.exception.EmailAlreadyExistsException;
 import org.thivernale.customerservice.grpc.BillingServiceGrpcClient;
 import org.thivernale.customerservice.model.Customer;
+import org.thivernale.customerservice.notification.NotificationProducer;
 import org.thivernale.customerservice.repository.CustomerRepository;
 
 import java.util.List;
 
+@Transactional
 @Service
 @RequiredArgsConstructor
 public class CustomerService {
@@ -19,14 +23,21 @@ public class CustomerService {
     private final CustomerRepository customerRepository;
     private final CustomerMapper customerMapper;
     private final BillingServiceGrpcClient billingServiceGrpcClient;
+    private final NotificationProducer notificationProducer;
 
     public String createCustomer(CustomerRequest customerRequest) {
+        if (customerRepository.existsByEmail(customerRequest.email())) {
+            throw new EmailAlreadyExistsException("Customer with email already exists: " + customerRequest.email());
+        }
+
         Customer customer = customerRepository.save(customerMapper.toCustomer(customerRequest));
 
         billingServiceGrpcClient.createBillingAccount(
             customer.getId(),
             customer.getFirstName() + " " + customer.getLastName(),
             customer.getEmail());
+
+        notificationProducer.sendNotification(customer);
 
         return customer
             .getId();

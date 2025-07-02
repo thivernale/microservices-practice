@@ -18,6 +18,12 @@ public class GlobalExceptionHandler {
             .body(exception.getMessage());
     }
 
+    @ExceptionHandler(EmailAlreadyExistsException.class)
+    public ResponseEntity<String> handle(EmailAlreadyExistsException exception) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .body(exception.getMessage());
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handle(MethodArgumentNotValidException exception) {
         Map<String, String> errors = new HashMap<>();

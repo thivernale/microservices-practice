@@ -17,6 +17,11 @@ spec:
           image: thivernale/customer-service:latest
           imagePullPolicy: IfNotPresent
           env:
+            - name: SPRING_KAFKA_BOOTSTRAP-SERVERS
+              valueFrom:
+                configMapKeyRef:
+                  key: SPRING_KAFKA_BOOTSTRAP-SERVERS
+                  name: common-config
             - name: SPRING_DATA_MONGODB_URI
               valueFrom:
                 configMapKeyRef:

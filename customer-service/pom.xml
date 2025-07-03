@@ -16,6 +16,8 @@
         <grpc.version>1.72.0</grpc.version>
         <protobuf-java.version>4.30.2</protobuf-java.version>
         <spring-grpc.version>0.8.0</spring-grpc.version>
+        <wiremock-testcontainers-module.version>1.0-alpha-14</wiremock-testcontainers-module.version>
+        <wiremock-spring-boot-starter.version>1.0.0</wiremock-spring-boot-starter.version>
     </properties>
 
     <dependencies>
@@ -89,14 +91,14 @@
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-devtools</artifactId>
             <scope>runtime</scope>
             <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>org.springdoc</groupId>
-            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -112,6 +114,45 @@
         <dependency>
             <groupId>org.springframework.kafka</groupId>
             <artifactId>spring-kafka-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-testcontainers</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>mongodb</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>kafka</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.wiremock.integrations.testcontainers</groupId>
+            <artifactId>wiremock-testcontainers-module</artifactId>
+            <version>${wiremock-testcontainers-module.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.epages</groupId>
+            <artifactId>wiremock-spring-boot-starter</artifactId>
+            <version>${wiremock-spring-boot-starter.version}</version>
+            <scope>test</scope>
+            <type>pom</type>
+        </dependency>
+        <dependency>
+            <groupId>org.wiremock</groupId>
+            <artifactId>wiremock-grpc-extension</artifactId>
+            <version>0.11.0</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

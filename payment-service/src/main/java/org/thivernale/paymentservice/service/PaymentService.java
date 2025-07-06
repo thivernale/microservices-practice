@@ -2,6 +2,7 @@ package org.thivernale.paymentservice.service;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,5 +55,22 @@ public class PaymentService {
 
     public Payment save(CreatePaymentTransactionRequest request) {
         return paymentRepository.save(paymentMapper.toPayment(request));
+    }
+
+    public BigDecimal calculateOutstandingAmount(
+        Payment payment,
+        @NotNull(message = "Currency should be specified")
+        String targetCurrency
+    ) {
+        return convert(payment.getAmount(), payment.getCurrency(), targetCurrency)
+            .subtract(payment.getRefunds()
+                .stream()
+                .map(refund -> convert(refund.getAmount(), refund.getCurrency(), targetCurrency))
+                .reduce(BigDecimal.ZERO, BigDecimal::add));
+    }
+
+    private BigDecimal convert(BigDecimal amount, String sourceCurrency, String targetCurrency) {
+        // TODO currency conversion into target currency
+        return amount;
     }
 }

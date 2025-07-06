@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.thivernale.paymentservice.dto.CreatePaymentTransactionRequest;
+import org.thivernale.paymentservice.dto.CreatePaymentTransactionResponse;
 import org.thivernale.paymentservice.model.BankAccount;
 import org.thivernale.paymentservice.model.Payment;
 import org.thivernale.paymentservice.model.PaymentTransactionCommand;
@@ -24,11 +25,12 @@ public class CreatePaymentTransactionHandler implements PaymentTransactionComman
     private final PaymentService paymentService;
     private final BankAccountService bankAccountService;
     private final PaymentTransactionProducer paymentTransactionProducer;
+    private final JsonConverter jsonConverter;
 
     @Override
     @Transactional
     public void process(String requestId, String message) {
-        CreatePaymentTransactionRequest request = JsonConverter.toObject(message, CreatePaymentTransactionRequest.class);
+        CreatePaymentTransactionRequest request = jsonConverter.toObject(message, CreatePaymentTransactionRequest.class);
 
         validator.validate(request);
 
@@ -43,10 +45,18 @@ public class CreatePaymentTransactionHandler implements PaymentTransactionComman
 
         Payment payment = paymentService.save(request);
 
+        CreatePaymentTransactionResponse response = new CreatePaymentTransactionResponse(
+            payment.getId(),
+            payment.getStatus(),
+            null,
+            payment.getCreatedAt()
+        );
+
+        // TODO send response on error - maybe in global error handler
         paymentTransactionProducer.sendCommandResult(
             paymentTransactionProducer.getResultTopic(),
             requestId,
-            JsonConverter.toString(payment),
+            jsonConverter.toString(response),
             PaymentTransactionCommand.CREATE
         );
     }

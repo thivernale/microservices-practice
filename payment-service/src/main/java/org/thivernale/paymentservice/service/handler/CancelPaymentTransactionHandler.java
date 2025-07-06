@@ -30,26 +30,12 @@ public class CancelPaymentTransactionHandler implements PaymentTransactionComman
     private final JsonConverter jsonConverter;
 
     @Override
-    @Transactional
     public void process(String requestId, String message) {
         CancelPaymentTransactionRequest request = jsonConverter.toObject(message, CancelPaymentTransactionRequest.class);
 
         validator.validate(request);
 
-        paymentService.findById(request.paymentTransactionId())
-            .ifPresent(paymentTransaction -> {
-                bankAccountService.findById(paymentTransaction.getSourceBankAccount()
-                        .getId())
-                    .ifPresent(bankAccount -> subtractFromBankAccountBalance(bankAccount, request.amount()
-                        .negate()));
-                if (paymentTransaction.getDestBankAccount() != null) {
-                    bankAccountService.findById(paymentTransaction.getDestBankAccount()
-                            .getId())
-                        .ifPresent(bankAccount -> subtractFromBankAccountBalance(bankAccount, request.amount()));
-                }
-            });
-
-        Refund refund = refundService.save(request);
+        Refund refund = saveOperation(request);
 
         CancelPaymentTransactionResponse response = new CancelPaymentTransactionResponse(
             refund.getId(),
@@ -67,8 +53,27 @@ public class CancelPaymentTransactionHandler implements PaymentTransactionComman
         );
     }
 
+    @Transactional
+    Refund saveOperation(CancelPaymentTransactionRequest request) {
+        paymentService.findById(request.paymentTransactionId())
+            .ifPresent(paymentTransaction -> {
+                bankAccountService.findById(paymentTransaction.getSourceBankAccount()
+                        .getId())
+                    .ifPresent(bankAccount -> subtractFromBankAccountBalance(bankAccount, request.amount()
+                        .negate()));
+                if (paymentTransaction.getDestBankAccount() != null) {
+                    bankAccountService.findById(paymentTransaction.getDestBankAccount()
+                            .getId())
+                        .ifPresent(bankAccount -> subtractFromBankAccountBalance(bankAccount, request.amount()));
+                }
+            });
+
+        return refundService.save(request);
+    }
+
     private void subtractFromBankAccountBalance(BankAccount bankAccount, BigDecimal delta) {
         bankAccount.setBalance(bankAccount.getBalance()
             .subtract(delta));
+        bankAccountService.save(bankAccount);
     }
 }

@@ -15,4 +15,8 @@ public class BankAccountService {
     public Optional<BankAccount> findById(Long id) {
         return bankAccountRepository.findById(id);
     }
+
+    public BankAccount save(BankAccount bankAccount) {
+        return bankAccountRepository.save(bankAccount);
+    }
 }

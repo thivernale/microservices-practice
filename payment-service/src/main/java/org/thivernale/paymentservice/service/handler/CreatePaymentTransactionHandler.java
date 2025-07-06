@@ -28,22 +28,12 @@ public class CreatePaymentTransactionHandler implements PaymentTransactionComman
     private final JsonConverter jsonConverter;
 
     @Override
-    @Transactional
     public void process(String requestId, String message) {
         CreatePaymentTransactionRequest request = jsonConverter.toObject(message, CreatePaymentTransactionRequest.class);
 
         validator.validate(request);
 
-        // TODO currency conversion
-        bankAccountService.findById(request.sourceBankAccountId())
-            .ifPresent(bankAccount -> subtractFromBankAccountBalance(bankAccount, request.amount()));
-        if (request.destBankAccountId() != null) {
-            bankAccountService.findById(request.destBankAccountId())
-                .ifPresent(bankAccount -> subtractFromBankAccountBalance(bankAccount, request.amount()
-                    .negate()));
-        }
-
-        Payment payment = paymentService.save(request);
+        Payment payment = saveOperation(request);
 
         CreatePaymentTransactionResponse response = new CreatePaymentTransactionResponse(
             payment.getId(),
@@ -61,8 +51,23 @@ public class CreatePaymentTransactionHandler implements PaymentTransactionComman
         );
     }
 
+    @Transactional
+    Payment saveOperation(CreatePaymentTransactionRequest request) {
+        // TODO currency conversion
+        bankAccountService.findById(request.sourceBankAccountId())
+            .ifPresent(bankAccount -> subtractFromBankAccountBalance(bankAccount, request.amount()));
+        if (request.destBankAccountId() != null) {
+            bankAccountService.findById(request.destBankAccountId())
+                .ifPresent(bankAccount -> subtractFromBankAccountBalance(bankAccount, request.amount()
+                    .negate()));
+        }
+
+        return paymentService.save(request);
+    }
+
     private void subtractFromBankAccountBalance(BankAccount bankAccount, BigDecimal delta) {
         bankAccount.setBalance(bankAccount.getBalance()
             .subtract(delta));
+        bankAccountService.save(bankAccount);
     }
 }

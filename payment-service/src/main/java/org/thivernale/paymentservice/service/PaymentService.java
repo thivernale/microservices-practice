@@ -53,6 +53,10 @@ public class PaymentService {
         return paymentRepository.findById(id);
     }
 
+    public Optional<Payment> findByIdWithRefunds(Long id) {
+        return paymentRepository.findByIdWithRefunds(id);
+    }
+
     public Payment save(CreatePaymentTransactionRequest request) {
         return paymentRepository.save(paymentMapper.toPayment(request));
     }

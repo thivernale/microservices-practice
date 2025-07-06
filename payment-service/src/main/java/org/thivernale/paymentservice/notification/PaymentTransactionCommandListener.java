@@ -23,7 +23,7 @@ public class PaymentTransactionCommandListener {
         PaymentTransactionCommandHandler handler = commandHandlers.get(command);
 
         if (handler == null) {
-            throw new IllegalArgumentException("Unsupported payment transaction command from record: " + record);
+            throw new IllegalArgumentException("Unsupported payment transaction command " + command.toString() + " from record: " + record);
         }
 
         handler.process(record.key(), record.value());
@@ -33,8 +33,8 @@ public class PaymentTransactionCommandListener {
         Header commandHeader = record.headers()
             .lastHeader("command");
         if (commandHeader != null && commandHeader.value() != null) {
-            return PaymentTransactionCommand.fromString(commandHeader.value()
-                .toString());
+            String commandString = new String(commandHeader.value());
+            return PaymentTransactionCommand.fromString(commandString);
         }
         return PaymentTransactionCommand.UNKNOWN;
     }

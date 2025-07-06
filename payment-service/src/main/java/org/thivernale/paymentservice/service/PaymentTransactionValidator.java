@@ -10,6 +10,7 @@ import org.thivernale.paymentservice.exception.RefundValidationException;
 import org.thivernale.paymentservice.model.BankAccount;
 import org.thivernale.paymentservice.model.Payment;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,10 +22,10 @@ public class PaymentTransactionValidator {
     private final PaymentService paymentService;
 
     public void validate(CreatePaymentTransactionRequest request) {
-        List<String> errors = validator.validate(request)
+        List<String> errors = new ArrayList(validator.validate(request)
             .stream()
             .map(v -> v.getMessage())
-            .toList();
+            .toList());
 
         // validate source bank account and balance
         if (request.sourceBankAccountId() != null) {
@@ -49,18 +50,18 @@ public class PaymentTransactionValidator {
     }
 
     public void validate(CancelPaymentTransactionRequest request) {
-        List<String> errors = validator.validate(request)
+        List<String> errors = new ArrayList(validator.validate(request)
             .stream()
             .map(v -> v.getMessage())
-            .toList();
+            .toList());
 
         // validate payment transaction and outstanding amount
         if (request.paymentTransactionId() != null) {
-            Optional<Payment> payment = paymentService.findById(request.paymentTransactionId());
+            Optional<Payment> payment = paymentService.findByIdWithRefunds(request.paymentTransactionId());
             if (payment.isEmpty()) {
                 errors.add("Payment not found, id: " + request.paymentTransactionId());
             } else if (request.amount()
-                .compareTo(paymentService.calculateOutstandingAmount(payment.get(), request.currency())) < 0) {
+                .compareTo(paymentService.calculateOutstandingAmount(payment.get(), request.currency())) > 0) {
                 errors.add("Refund amount exceeds outstanding amount of payment, id: " + request.paymentTransactionId());
             }
         }

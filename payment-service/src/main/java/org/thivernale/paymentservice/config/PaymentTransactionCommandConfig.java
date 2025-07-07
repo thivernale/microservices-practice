@@ -2,16 +2,16 @@ package org.thivernale.paymentservice.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.thivernale.paymentservice.model.PaymentTransactionCommand;
-import org.thivernale.paymentservice.service.handler.CancelPaymentTransactionHandler;
-import org.thivernale.paymentservice.service.handler.CreatePaymentTransactionHandler;
-import org.thivernale.paymentservice.service.handler.PaymentTransactionCommandHandler;
+import org.thivernale.paymentservice.wallet.model.PaymentTransactionCommand;
+import org.thivernale.paymentservice.wallet.service.handler.CancelPaymentTransactionHandler;
+import org.thivernale.paymentservice.wallet.service.handler.CreatePaymentTransactionHandler;
+import org.thivernale.paymentservice.wallet.service.handler.PaymentTransactionCommandHandler;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.thivernale.paymentservice.model.PaymentTransactionCommand.CREATE;
-import static org.thivernale.paymentservice.model.PaymentTransactionCommand.REFUND;
+import static org.thivernale.paymentservice.wallet.model.PaymentTransactionCommand.CREATE;
+import static org.thivernale.paymentservice.wallet.model.PaymentTransactionCommand.REFUND;
 
 @Configuration
 public class PaymentTransactionCommandConfig {

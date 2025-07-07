@@ -25,6 +25,7 @@ public class KafkaTopicConfig {
             .build();
     }
 
+    // KafkaAdmin bean will automatically create topics for all beans of type NewTopic
     @Bean
     public KafkaAdmin kafkaAdmin() {
         Map<String, Object> configs = new HashMap<>();

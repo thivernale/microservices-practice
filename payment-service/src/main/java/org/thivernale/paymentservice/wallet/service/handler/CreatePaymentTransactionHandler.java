@@ -7,11 +7,11 @@ import org.springframework.transaction.annotation.Transactional;
 import org.thivernale.paymentservice.util.JsonConverter;
 import org.thivernale.paymentservice.wallet.dto.CreatePaymentTransactionRequest;
 import org.thivernale.paymentservice.wallet.dto.CreatePaymentTransactionResponse;
-import org.thivernale.paymentservice.wallet.model.BankAccount;
+import org.thivernale.paymentservice.wallet.model.CurrencyAccount;
 import org.thivernale.paymentservice.wallet.model.PaymentTransaction;
 import org.thivernale.paymentservice.wallet.model.PaymentTransactionCommand;
 import org.thivernale.paymentservice.wallet.notification.PaymentTransactionProducer;
-import org.thivernale.paymentservice.wallet.service.BankAccountService;
+import org.thivernale.paymentservice.wallet.service.CurrencyAccountService;
 import org.thivernale.paymentservice.wallet.service.PaymentTransactionService;
 import org.thivernale.paymentservice.wallet.service.PaymentTransactionValidator;
 
@@ -23,7 +23,7 @@ import java.math.BigDecimal;
 public class CreatePaymentTransactionHandler implements PaymentTransactionCommandHandler {
     private final PaymentTransactionValidator validator;
     private final PaymentTransactionService paymentTransactionService;
-    private final BankAccountService bankAccountService;
+    private final CurrencyAccountService currencyAccountService;
     private final PaymentTransactionProducer paymentTransactionProducer;
     private final JsonConverter jsonConverter;
 
@@ -53,21 +53,21 @@ public class CreatePaymentTransactionHandler implements PaymentTransactionComman
     }
 
     PaymentTransaction saveOperation(CreatePaymentTransactionRequest request) {
-        // TODO currency conversion
-        bankAccountService.findById(request.sourceBankAccountId())
-            .ifPresent(bankAccount -> subtractFromBankAccountBalance(bankAccount, request.amount()));
-        if (request.destBankAccountId() != null) {
-            bankAccountService.findById(request.destBankAccountId())
-                .ifPresent(bankAccount -> subtractFromBankAccountBalance(bankAccount, request.amount()
+        // TODO currency conversion - amount should always be in account currency
+        currencyAccountService.findById(request.sourceCurrencyAccountId())
+            .ifPresent(account -> subtractFromCurrencyAccountBalance(account, request.amount()));
+        if (request.destCurrencyAccountId() != null) {
+            currencyAccountService.findById(request.destCurrencyAccountId())
+                .ifPresent(account -> subtractFromCurrencyAccountBalance(account, request.amount()
                     .negate()));
         }
 
         return paymentTransactionService.save(request);
     }
 
-    private void subtractFromBankAccountBalance(BankAccount bankAccount, BigDecimal delta) {
-        bankAccount.setBalance(bankAccount.getBalance()
+    private void subtractFromCurrencyAccountBalance(CurrencyAccount account, BigDecimal delta) {
+        account.setBalance(account.getBalance()
             .subtract(delta));
-        bankAccountService.save(bankAccount);
+        currencyAccountService.save(account);
     }
 }

@@ -10,18 +10,18 @@ import org.thivernale.paymentservice.wallet.model.PaymentTransactionStatus;
 @Service
 @RequiredArgsConstructor
 public class PaymentTransactionMapper {
-    private final BankAccountService bankAccountService;
+    private final CurrencyAccountService currencyAccountService;
 
     public PaymentTransaction toPaymentTransaction(@Valid CreatePaymentTransactionRequest paymentRequest) {
         return PaymentTransaction.builder()
             .amount(paymentRequest.amount())
             .currency(paymentRequest.currency())
-            .sourceBankAccount(bankAccountService.findById(paymentRequest.sourceBankAccountId())
+            .source(currencyAccountService.findById(paymentRequest.sourceCurrencyAccountId())
                 .orElseThrow())
-            .destBankAccount(
-                paymentRequest.destBankAccountId() == null ?
+            .destination(
+                paymentRequest.destCurrencyAccountId() == null ?
                     null :
-                    bankAccountService.findById(paymentRequest.destBankAccountId())
+                    currencyAccountService.findById(paymentRequest.destCurrencyAccountId())
                         .orElseThrow())
             .status(PaymentTransactionStatus.SUCCESS)
             .note(paymentRequest.note())

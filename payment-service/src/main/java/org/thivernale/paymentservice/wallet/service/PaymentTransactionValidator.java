@@ -29,20 +29,20 @@ public class PaymentTransactionValidator {
             .toList());
 
         // validate source bank account and balance
-        if (request.sourceBankAccountId() != null) {
-            Optional<BankAccount> bankAccount = bankAccountService.findById(request.sourceBankAccountId());
+        if (request.sourceCurrencyAccountId() != null) {
+            Optional<BankAccount> bankAccount = bankAccountService.findById(request.sourceCurrencyAccountId());
             if (bankAccount.isEmpty()) {
-                errors.add("Source bank account not found, id: " + request.sourceBankAccountId());
+                errors.add("Source bank account not found, id: " + request.sourceCurrencyAccountId());
             } else if (bankAccount.get()
                 .getBalance()
                 .compareTo(request.amount()) < 0) {
-                errors.add("Bank account balance not enough, id: " + request.sourceBankAccountId());
+                errors.add("Bank account balance not enough, id: " + request.sourceCurrencyAccountId());
             }
         }
         // validate destination bank account
-        if (request.destBankAccountId() != null && bankAccountService.findById(request.destBankAccountId())
+        if (request.destCurrencyAccountId() != null && bankAccountService.findById(request.destCurrencyAccountId())
             .isEmpty()) {
-            errors.add("Destination bank account not found, id: " + request.destBankAccountId());
+            errors.add("Destination bank account not found, id: " + request.destCurrencyAccountId());
         }
 
         if (!errors.isEmpty()) {

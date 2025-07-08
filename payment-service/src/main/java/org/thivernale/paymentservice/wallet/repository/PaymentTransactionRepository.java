@@ -9,4 +9,8 @@ import java.util.Optional;
 public interface PaymentTransactionRepository extends JpaRepository<PaymentTransaction, Long> {
     @Query("SELECT pt FROM PaymentTransaction pt LEFT JOIN FETCH pt.refunds r WHERE pt.id = ?1")
     Optional<PaymentTransaction> findByIdWithRefunds(Long id);
+
+    //    @EntityGraph(attributePaths = {"sourceBankAccount", "destBankAccount", "refunds"}, type = EntityGraph.EntityGraphType.FETCH)
+    @Query("SELECT pt FROM PaymentTransaction pt LEFT JOIN FETCH pt.refunds r WHERE pt.id = :id")
+    Optional<PaymentTransaction> findOneById(Long id);
 }

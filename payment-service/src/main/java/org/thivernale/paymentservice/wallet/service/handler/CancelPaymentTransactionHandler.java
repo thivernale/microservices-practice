@@ -7,11 +7,11 @@ import org.springframework.transaction.annotation.Transactional;
 import org.thivernale.paymentservice.util.JsonConverter;
 import org.thivernale.paymentservice.wallet.dto.CancelPaymentTransactionRequest;
 import org.thivernale.paymentservice.wallet.dto.CancelPaymentTransactionResponse;
-import org.thivernale.paymentservice.wallet.model.BankAccount;
+import org.thivernale.paymentservice.wallet.model.CurrencyAccount;
 import org.thivernale.paymentservice.wallet.model.PaymentTransactionCommand;
 import org.thivernale.paymentservice.wallet.model.Refund;
 import org.thivernale.paymentservice.wallet.notification.PaymentTransactionProducer;
-import org.thivernale.paymentservice.wallet.service.BankAccountService;
+import org.thivernale.paymentservice.wallet.service.CurrencyAccountService;
 import org.thivernale.paymentservice.wallet.service.PaymentTransactionService;
 import org.thivernale.paymentservice.wallet.service.PaymentTransactionValidator;
 import org.thivernale.paymentservice.wallet.service.RefundService;
@@ -24,7 +24,7 @@ import java.math.BigDecimal;
 public class CancelPaymentTransactionHandler implements PaymentTransactionCommandHandler {
     private final PaymentTransactionValidator validator;
     private final RefundService refundService;
-    private final BankAccountService bankAccountService;
+    private final CurrencyAccountService currencyAccountService;
     private final PaymentTransactionService paymentTransactionService;
     private final PaymentTransactionProducer paymentTransactionProducer;
     private final JsonConverter jsonConverter;
@@ -55,25 +55,26 @@ public class CancelPaymentTransactionHandler implements PaymentTransactionComman
     }
 
     Refund saveOperation(CancelPaymentTransactionRequest request) {
+        // TODO currency conversion
         paymentTransactionService.findById(request.paymentTransactionId())
             .ifPresent(paymentTransaction -> {
-                bankAccountService.findById(paymentTransaction.getSourceBankAccount()
+                currencyAccountService.findById(paymentTransaction.getSource()
                         .getId())
-                    .ifPresent(bankAccount -> subtractFromBankAccountBalance(bankAccount, request.amount()
+                    .ifPresent(account -> subtractFromCurrencyAccountBalance(account, request.amount()
                         .negate()));
-                if (paymentTransaction.getDestBankAccount() != null) {
-                    bankAccountService.findById(paymentTransaction.getDestBankAccount()
+                if (paymentTransaction.getDestination() != null) {
+                    currencyAccountService.findById(paymentTransaction.getDestination()
                             .getId())
-                        .ifPresent(bankAccount -> subtractFromBankAccountBalance(bankAccount, request.amount()));
+                        .ifPresent(account -> subtractFromCurrencyAccountBalance(account, request.amount()));
                 }
             });
 
         return refundService.save(request);
     }
 
-    private void subtractFromBankAccountBalance(BankAccount bankAccount, BigDecimal delta) {
-        bankAccount.setBalance(bankAccount.getBalance()
+    private void subtractFromCurrencyAccountBalance(CurrencyAccount account, BigDecimal delta) {
+        account.setBalance(account.getBalance()
             .subtract(delta));
-        bankAccountService.save(bankAccount);
+        currencyAccountService.save(account);
     }
 }

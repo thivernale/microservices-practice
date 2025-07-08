@@ -30,9 +30,9 @@ public class PaymentTransaction extends BaseEntity {
     private PaymentTransactionStatus status;
     @ManyToOne
     @JoinColumn(nullable = false)
-    private BankAccount sourceBankAccount;
+    private CurrencyAccount source;
     @ManyToOne
-    private BankAccount destBankAccount;
+    private CurrencyAccount destination;
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "paymentTransaction")
     private List<Refund> refunds;
     private String note;

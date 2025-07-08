@@ -11,9 +11,9 @@ public record CreatePaymentTransactionRequest(
     BigDecimal amount,
     @NotNull(message = "Currency should be specified")
     String currency,
-    @NotNull(message = "Source bank account cannot be empty")
-    Long sourceBankAccountId,
-    Long destBankAccountId,
+    @NotNull(message = "Source account cannot be empty")
+    Long sourceCurrencyAccountId,
+    Long destCurrencyAccountId,
     String note
 ) {
 }

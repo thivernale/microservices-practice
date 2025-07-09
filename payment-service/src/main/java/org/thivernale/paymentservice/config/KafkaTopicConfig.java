@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.TopicBuilder;
 import org.springframework.kafka.core.KafkaAdmin;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,7 +18,7 @@ import java.util.Map;
 @Configuration
 @ConfigurationProperties(prefix = "spring.kafka")
 public class KafkaTopicConfig {
-    private List<TopicConfig> topics;
+    private List<TopicConfig> topics = new ArrayList<>();
 
     @Bean
     public NewTopic paymentTopic() {

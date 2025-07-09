@@ -1,2 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configuration/>
+<configuration>
+    <include resource="org/springframework/boot/logging/logback/base.xml"/>
+
+    <springProperty scope="context" name="app.name" source="spring.application.name" default-value="payment-service"/>
+
+    <springProfile name="!prod">
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+        </root>
+    </springProfile>
+    <springProfile name="prod">
+        <property name="LOG_FILE" value="${app.name}-prod.log"/>
+        <root level="INFO">
+            <appender-ref ref="FILE"/>
+        </root>
+    </springProfile>
+</configuration>

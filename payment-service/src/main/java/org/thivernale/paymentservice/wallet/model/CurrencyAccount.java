@@ -1,10 +1,7 @@
 package org.thivernale.paymentservice.wallet.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.thivernale.paymentservice.util.BaseEntity;
 
@@ -29,7 +26,9 @@ public class CurrencyAccount extends BaseEntity {
     @JoinColumn(nullable = false)
     private BankAccount bankAccount;
     @OneToMany(mappedBy = "source", orphanRemoval = true, cascade = CascadeType.ALL)
+    @Builder.Default
     private List<PaymentTransaction> sourceTransactions = new ArrayList<>();
     @OneToMany(mappedBy = "destination", orphanRemoval = true, cascade = CascadeType.ALL)
+    @Builder.Default
     private List<PaymentTransaction> destinationTransactions = new ArrayList<>();
 }

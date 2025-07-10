@@ -25,6 +25,6 @@ public class BankAccount extends BaseEntity {
     private String customerId;
     @Column(nullable = false)
     private BigDecimal balance;
-    @Column(nullable = false)
+    @Column(nullable = false, precision = 38, scale = 2)
     private String currency;
 }

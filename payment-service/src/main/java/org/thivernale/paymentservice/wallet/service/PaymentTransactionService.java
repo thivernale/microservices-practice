@@ -3,6 +3,7 @@ package org.thivernale.paymentservice.wallet.service;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.thivernale.paymentservice.wallet.dto.CreatePaymentTransactionRequest;
@@ -13,6 +14,7 @@ import org.thivernale.paymentservice.wallet.model.Refund;
 import org.thivernale.paymentservice.wallet.repository.PaymentTransactionRepository;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
@@ -21,10 +23,12 @@ import java.util.Set;
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class PaymentTransactionService {
     private final PaymentTransactionRepository paymentTransactionRepository;
     private final PaymentTransactionMapper paymentTransactionMapper;
     private final CurrencyAccountService currencyAccountService;
+    private final CurrencyConverter currencyConverter;
 
     public Optional<PaymentTransaction> findById(Long id) {
         return paymentTransactionRepository.findById(id);
@@ -57,7 +61,7 @@ public class PaymentTransactionService {
         Map<Long, CurrencyAccount> accounts = currencyAccountService.findAll(ids);
 
         CurrencyAccount sourceAccount = accounts.get(sourceCurrencyAccountId);
-        CurrencyAccount destAccount = destCurrencyAccountId == null ? sourceAccount : accounts.get(destCurrencyAccountId);
+        CurrencyAccount destAccount = destCurrencyAccountId == null ? null : accounts.get(destCurrencyAccountId);
 
         // validate source balance
         if (sourceAccount
@@ -67,9 +71,12 @@ public class PaymentTransactionService {
         }
 
         subtractFromCurrencyAccountBalance(sourceAccount, request.amount());
-        if (!sourceAccount.equals(destAccount)) {
-            subtractFromCurrencyAccountBalance(destAccount, request.amount()
-                .negate());
+        if (destAccount != null) {
+            BigDecimal destAmount = sourceAccount.getCurrency()
+                .equals(destAccount.getCurrency()) ?
+                request.amount() :
+                currencyConverter.convert(sourceAccount.getCurrency(), destAccount.getCurrency(), request.amount());
+            subtractFromCurrencyAccountBalance(destAccount, destAmount.negate());
         }
 
         return save(request);
@@ -77,7 +84,8 @@ public class PaymentTransactionService {
 
     private void subtractFromCurrencyAccountBalance(CurrencyAccount account, BigDecimal delta) {
         account.setBalance(account.getBalance()
-            .subtract(delta));
+            .subtract(delta, new MathContext(account.getBalance()
+                .scale())));
         currencyAccountService.save(account);
     }
 }

@@ -20,6 +20,7 @@ import java.math.BigDecimal;
 @SuperBuilder
 @EntityListeners(AuditingEntityListener.class)
 class Payment extends BaseEntity {
+    @Column(nullable = false, precision = 38, scale = 2)
     private BigDecimal amount;
     @Enumerated(EnumType.STRING)
     private PaymentMethod paymentMethod;

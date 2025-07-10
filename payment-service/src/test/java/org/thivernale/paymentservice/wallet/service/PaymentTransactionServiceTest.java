@@ -8,6 +8,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.thivernale.paymentservice.exchangerates.repository.ExchangeRateRepository;
 import org.thivernale.paymentservice.wallet.dto.CreatePaymentTransactionRequest;
 import org.thivernale.paymentservice.wallet.exception.InsufficientFundsException;
 import org.thivernale.paymentservice.wallet.model.CurrencyAccount;
@@ -32,6 +33,8 @@ class PaymentTransactionServiceTest {
     private PaymentTransactionRepository paymentTransactionRepository;
     @Mock
     private CurrencyAccountService currencyAccountService;
+    @Mock
+    private ExchangeRateRepository exchangeRateRepository;
     @Captor
     private ArgumentCaptor<PaymentTransaction> paymentCaptor;
 
@@ -40,7 +43,8 @@ class PaymentTransactionServiceTest {
         paymentTransactionService = new PaymentTransactionService(
             paymentTransactionRepository,
             new PaymentTransactionMapper(currencyAccountService),
-            currencyAccountService
+            currencyAccountService,
+            new CurrencyConverter(exchangeRateRepository)
         );
     }
 

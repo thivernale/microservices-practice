@@ -4,6 +4,7 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.thivernale.paymentservice.wallet.dto.CancelPaymentTransactionRequest;
@@ -14,15 +15,18 @@ import org.thivernale.paymentservice.wallet.model.Refund;
 import org.thivernale.paymentservice.wallet.repository.RefundRepository;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class RefundService {
     private final RefundRepository refundRepository;
     private final RefundMapper refundMapper;
     private final CurrencyAccountService currencyAccountService;
     private final PaymentTransactionService paymentTransactionService;
+    private final CurrencyConverter currencyConverter;
 
     public Refund save(CancelPaymentTransactionRequest request) {
         return refundRepository.save(refundMapper.toRefund(request));
@@ -41,10 +45,17 @@ public class RefundService {
             throw new InsufficientOutstandingAmountException(paymentTransactionId, outstandingAmount, request.amount());
         }
 
-        subtractFromCurrencyAccountBalance(paymentTransaction.getSource(), request.amount()
+        CurrencyAccount sourceAccount = paymentTransaction.getSource();
+        CurrencyAccount destAccount = paymentTransaction.getDestination();
+
+        subtractFromCurrencyAccountBalance(sourceAccount, request.amount()
             .negate());
-        if (paymentTransaction.getDestination() != null) {
-            subtractFromCurrencyAccountBalance(paymentTransaction.getDestination(), request.amount());
+        if (destAccount != null) {
+            BigDecimal destAmount = sourceAccount.getCurrency()
+                .equals(destAccount.getCurrency()) ?
+                request.amount() :
+                currencyConverter.convert(sourceAccount.getCurrency(), destAccount.getCurrency(), request.amount());
+            subtractFromCurrencyAccountBalance(destAccount, destAmount);
         }
 
         return save(request);
@@ -52,7 +63,8 @@ public class RefundService {
 
     private void subtractFromCurrencyAccountBalance(CurrencyAccount account, BigDecimal delta) {
         account.setBalance(account.getBalance()
-            .subtract(delta));
+            .subtract(delta, new MathContext(account.getBalance()
+                .scale())));
         currencyAccountService.save(account);
     }
 }

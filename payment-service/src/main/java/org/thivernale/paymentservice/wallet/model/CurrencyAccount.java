@@ -17,7 +17,7 @@ import java.util.List;
 @Setter
 @SuperBuilder
 public class CurrencyAccount extends BaseEntity {
-    @Column(nullable = false)
+    @Column(nullable = false, precision = 38, scale = 2)
     private BigDecimal balance;
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)

@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.thivernale.paymentservice.exchangerates.repository.ExchangeRateRepository;
 import org.thivernale.paymentservice.wallet.dto.CancelPaymentTransactionRequest;
 import org.thivernale.paymentservice.wallet.exception.InsufficientOutstandingAmountException;
 import org.thivernale.paymentservice.wallet.model.PaymentTransaction;
@@ -30,6 +31,8 @@ class RefundServiceTest {
     private CurrencyAccountService currencyAccountService;
     @Mock
     private PaymentTransactionService paymentTransactionService;
+    @Mock
+    private ExchangeRateRepository exchangeRateRepository;
 
     @BeforeEach
     void setUp() {
@@ -37,7 +40,8 @@ class RefundServiceTest {
             refundRepository,
             new RefundMapper(paymentTransactionService),
             currencyAccountService,
-            paymentTransactionService
+            paymentTransactionService,
+            new CurrencyConverter(exchangeRateRepository)
         );
     }
 

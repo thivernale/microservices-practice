@@ -11,8 +11,6 @@ public record CancelPaymentTransactionRequest(
     @Positive(message = "Refund amount should be positive")
     @NotNull(message = "Refund amount should be positive")
     BigDecimal amount,
-    @NotNull(message = "Currency should be specified")
-    String currency,
     String reason
 ) {
 }

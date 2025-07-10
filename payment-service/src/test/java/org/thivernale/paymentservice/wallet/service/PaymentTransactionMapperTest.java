@@ -43,7 +43,6 @@ class PaymentTransactionMapperTest {
 
         PaymentTransaction expected = PaymentTransaction.builder()
             .amount(request.amount())
-            .currency(request.currency())
             .source(sourceAcc)
             .destination(destAcc)
             .status(PaymentTransactionStatus.SUCCESS)

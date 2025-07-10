@@ -15,7 +15,6 @@ public class PaymentTransactionMapper {
     public PaymentTransaction toPaymentTransaction(@Valid CreatePaymentTransactionRequest paymentRequest) {
         return PaymentTransaction.builder()
             .amount(paymentRequest.amount())
-            .currency(paymentRequest.currency())
             .source(currencyAccountService.findById(paymentRequest.sourceCurrencyAccountId())
                 .orElseThrow())
             .destination(

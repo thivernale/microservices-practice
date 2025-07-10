@@ -49,7 +49,7 @@ public class PaymentController {
         Long destBankAccountId = 2L;
 
         CreatePaymentTransactionRequest request = new CreatePaymentTransactionRequest(
-            BigDecimal.valueOf(100L), "BGN", sourceBankAccountId, destBankAccountId, "test payment transaction"
+            BigDecimal.valueOf(100L), sourceBankAccountId, destBankAccountId, "test payment transaction"
         );
 
         paymentTransactionProducer.sendCommandResult(
@@ -62,7 +62,7 @@ public class PaymentController {
         Long paymentId = 1L;
 
         CancelPaymentTransactionRequest request = new CancelPaymentTransactionRequest(
-            paymentId, BigDecimal.valueOf(100L), "BGN", "test refund"
+            paymentId, BigDecimal.valueOf(100L), "test refund"
         );
 
         paymentTransactionProducer.sendCommandResult(

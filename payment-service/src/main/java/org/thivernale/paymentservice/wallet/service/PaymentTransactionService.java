@@ -9,6 +9,7 @@ import org.thivernale.paymentservice.wallet.dto.CreatePaymentTransactionRequest;
 import org.thivernale.paymentservice.wallet.exception.InsufficientFundsException;
 import org.thivernale.paymentservice.wallet.model.CurrencyAccount;
 import org.thivernale.paymentservice.wallet.model.PaymentTransaction;
+import org.thivernale.paymentservice.wallet.model.Refund;
 import org.thivernale.paymentservice.wallet.repository.PaymentTransactionRepository;
 
 import java.math.BigDecimal;
@@ -37,25 +38,15 @@ public class PaymentTransactionService {
         return paymentTransactionRepository.save(paymentTransactionMapper.toPaymentTransaction(request));
     }
 
-    public BigDecimal calculateOutstandingAmount(
-        PaymentTransaction payment,
-        @NotNull(message = "Currency should be specified")
-        String targetCurrency
-    ) {
-        return convert(payment.getAmount(), payment.getCurrency(), targetCurrency)
+    public BigDecimal calculateOutstandingAmount(PaymentTransaction payment) {
+        return payment.getAmount()
             .subtract(payment.getRefunds()
                 .stream()
-                .map(refund -> convert(refund.getAmount(), refund.getCurrency(), targetCurrency))
+                .map(Refund::getAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add));
     }
 
-    private BigDecimal convert(BigDecimal amount, String sourceCurrency, String targetCurrency) {
-        // TODO currency conversion into target currency
-        return amount;
-    }
-
     public PaymentTransaction create(@NotNull @Valid CreatePaymentTransactionRequest request) {
-        // TODO currency conversion - amount should always be in account currency
         Long sourceCurrencyAccountId = request.sourceCurrencyAccountId();
         Long destCurrencyAccountId = request.destCurrencyAccountId();
         // cannot add null in utility methods List.of, Set.of

@@ -24,8 +24,6 @@ public class PaymentTransaction extends BaseEntity {
     @Column(nullable = false)
     private BigDecimal amount;
     @Column(nullable = false)
-    private String currency;
-    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private PaymentTransactionStatus status;
     @ManyToOne

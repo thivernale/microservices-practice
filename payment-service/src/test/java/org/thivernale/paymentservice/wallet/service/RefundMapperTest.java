@@ -33,7 +33,6 @@ class RefundMapperTest {
         PaymentTransaction paymentTransaction = PaymentTransaction.builder()
             .id(100L)
             .amount(BigDecimal.valueOf(100.0))
-            .currency("BGN")
             .build();
 
         when(paymentTransactionService.findById(request.paymentTransactionId()))
@@ -44,7 +43,6 @@ class RefundMapperTest {
         Refund expected = Refund.builder()
             .paymentTransaction(paymentTransaction)
             .amount(request.amount())
-            .currency(request.currency())
             .status(PaymentTransactionStatus.SUCCESS)
             .reason(request.reason())
             .build();

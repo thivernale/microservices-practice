@@ -29,15 +29,13 @@ public class RefundService {
     }
 
     public Refund create(@NotNull @Valid CancelPaymentTransactionRequest request) {
-        // TODO currency conversion
-
         Long paymentTransactionId = request.paymentTransactionId();
 
         PaymentTransaction paymentTransaction = paymentTransactionService.findByIdWithRefunds(paymentTransactionId)
             .orElseThrow(() -> new EntityNotFoundException("Payment transaction not found, id: " + paymentTransactionId));
 
         // validate payment transaction and outstanding amount
-        BigDecimal outstandingAmount = paymentTransactionService.calculateOutstandingAmount(paymentTransaction, request.currency());
+        BigDecimal outstandingAmount = paymentTransactionService.calculateOutstandingAmount(paymentTransaction);
         if (request.amount()
             .compareTo(outstandingAmount) > 0) {
             throw new InsufficientOutstandingAmountException(paymentTransactionId, outstandingAmount, request.amount());

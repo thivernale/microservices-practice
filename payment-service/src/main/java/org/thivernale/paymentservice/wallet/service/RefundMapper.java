@@ -17,7 +17,6 @@ public class RefundMapper {
             .paymentTransaction(paymentTransactionService.findById(request.paymentTransactionId())
                 .orElseThrow())
             .amount(request.amount())
-            .currency(request.currency())
             .status(PaymentTransactionStatus.SUCCESS)
             .reason(request.reason())
             .build();

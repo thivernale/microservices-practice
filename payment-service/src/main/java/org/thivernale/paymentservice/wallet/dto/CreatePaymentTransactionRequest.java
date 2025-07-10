@@ -9,8 +9,6 @@ public record CreatePaymentTransactionRequest(
     @Positive(message = "Payment transaction amount should be positive")
     @NotNull(message = "Payment transaction amount should be positive")
     BigDecimal amount,
-    @NotNull(message = "Currency should be specified")
-    String currency,
     @NotNull(message = "Source account cannot be empty")
     Long sourceCurrencyAccountId,
     Long destCurrencyAccountId,

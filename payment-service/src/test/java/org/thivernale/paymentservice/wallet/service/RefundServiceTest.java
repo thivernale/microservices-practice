@@ -46,7 +46,6 @@ class RefundServiceTest {
         CancelPaymentTransactionRequest request = TestDataUtil.createRefundRequest();
         PaymentTransaction paymentTransaction = PaymentTransaction.builder()
             .amount(request.amount())
-            .currency("BGN")
             .source(TestDataUtil.getCurrencyAccount(1L))
             .refunds(List.of())
             .build();
@@ -57,7 +56,7 @@ class RefundServiceTest {
             .thenReturn(Optional.of(paymentTransaction));
         when(paymentTransactionService.findByIdWithRefunds(request.paymentTransactionId()))
             .thenReturn(Optional.of(paymentTransaction));
-        when(paymentTransactionService.calculateOutstandingAmount(paymentTransaction, request.currency()))
+        when(paymentTransactionService.calculateOutstandingAmount(paymentTransaction))
             .thenReturn(paymentTransaction.getAmount());
 
         refundService.create(request);
@@ -92,7 +91,6 @@ class RefundServiceTest {
         CancelPaymentTransactionRequest request = TestDataUtil.createRefundRequest();
         PaymentTransaction paymentTransaction = PaymentTransaction.builder()
             .amount(request.amount())
-            .currency("BGN")
             .refunds(List.of(
                 Refund.builder()
                     .amount(request.amount())
@@ -102,7 +100,7 @@ class RefundServiceTest {
 
         when(paymentTransactionService.findByIdWithRefunds(request.paymentTransactionId()))
             .thenReturn(Optional.of(paymentTransaction));
-        when(paymentTransactionService.calculateOutstandingAmount(paymentTransaction, request.currency()))
+        when(paymentTransactionService.calculateOutstandingAmount(paymentTransaction))
             .thenReturn(BigDecimal.ZERO);
 
         assertThatThrownBy(() -> refundService.create(request))

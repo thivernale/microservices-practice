@@ -31,7 +31,6 @@ public final class TestDataUtil {
     public static CreatePaymentTransactionRequest createPaymentRequest() {
         return new CreatePaymentTransactionRequest(
             BigDecimal.valueOf(200),
-            "BGN",
             1L,
             2L,
             null
@@ -42,7 +41,6 @@ public final class TestDataUtil {
         return new CancelPaymentTransactionRequest(
             1L,
             BigDecimal.valueOf(200),
-            "BGN",
             "refund"
         );
     }

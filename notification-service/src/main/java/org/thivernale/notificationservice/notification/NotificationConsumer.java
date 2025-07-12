@@ -1,5 +1,7 @@
 package org.thivernale.notificationservice.notification;
 
+import com.google.protobuf.InvalidProtocolBufferException;
+import customer.events.CustomerEvent;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -10,6 +12,7 @@ import org.thivernale.notificationservice.email.EmailService;
 import org.thivernale.notificationservice.notification.event.OrderPlacedEvent;
 import org.thivernale.notificationservice.notification.event.PaymentEvent;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import static org.thivernale.notificationservice.notification.NotificationType.*;
@@ -86,5 +89,33 @@ public class NotificationConsumer {
             paymentEvent.orderReference(),
             paymentEvent.amount()
         );
+    }
+
+    @KafkaListener(
+        topics = {"customerTopic"},
+        containerFactory = "protobufListenerContainerFactory"
+    )
+    public void handleCustomerNotification(byte[] event) {
+        try {
+            CustomerEvent customerEvent = CustomerEvent.parseFrom(event);
+
+            log.info("Consuming message from customerTopic in protobuf format: {}", customerEvent);
+
+            notificationRepository.save(Notification.builder()
+                .notificationType(CUSTOMER_CREATED)
+                .notificationTime(LocalDateTime.now())
+                .paymentEvent(new PaymentEvent(
+                    customerEvent.getEventType(),
+                    BigDecimal.ZERO,
+                    null,
+                    customerEvent.getClientId(),
+                    customerEvent.getName(),
+                    customerEvent.getEmail()
+                ))
+                .build());
+        } catch (InvalidProtocolBufferException e) {
+            log.error("Error parsing protobuf event {}", e.getMessage(), e);
+            throw new RuntimeException(e);
+        }
     }
 }

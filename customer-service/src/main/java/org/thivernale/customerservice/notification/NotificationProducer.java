@@ -30,10 +30,10 @@ public class NotificationProducer {
         log.info("Sending notification request in protobuf format: {}", event);
 
         try {
-            Message<byte[]> paymentMessage = MessageBuilder.withPayload(event.toByteArray())
+            Message<byte[]> customerMessage = MessageBuilder.withPayload(event.toByteArray())
                 .setHeader(KafkaHeaders.TOPIC, customerTopic)
                 .build();
-            kafkaTemplate.send(paymentMessage);
+            kafkaTemplate.send(customerMessage);
         } catch (Exception e) {
             log.error("Error sending CustomerEvent: {}", event);
         }

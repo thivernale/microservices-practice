@@ -12,6 +12,8 @@ import org.thivernale.notificationservice.notification.event.PaymentEvent;
 
 import java.time.LocalDateTime;
 
+import static org.thivernale.notificationservice.notification.NotificationType.*;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -22,7 +24,7 @@ public class NotificationConsumer {
 
     @KafkaListener(
         topics = {"codeTopic"}
-        //  kafka-consumer-groups --bootstrap-server localhost:9092 --group orderGroup,paymentGroup --topic codeTopic
+        //  kafka-consumer-groups --bootstrap-server localhost:9092 --group notificationGroup --topic codeTopic
         //  --delete-offsets
         /*topicPartitions = {
             @TopicPartition(
@@ -47,7 +49,7 @@ public class NotificationConsumer {
         log.info("Consuming message from orderTopic: {}", orderPlacedEvent);
 
         notificationRepository.save(Notification.builder()
-            .notificationType(NotificationType.ORDER_CONFIRMATION)
+            .notificationType(ORDER_CONFIRMATION)
             .notificationTime(LocalDateTime.now())
             .orderPlacedEvent(orderPlacedEvent)
             .build());
@@ -73,7 +75,7 @@ public class NotificationConsumer {
         log.info("Consuming message from paymentTopic: {}", paymentEvent);
 
         notificationRepository.save(Notification.builder()
-            .notificationType(NotificationType.PAYMENT_CONFIRMATION)
+            .notificationType(PAYMENT_CONFIRMATION)
             .notificationTime(LocalDateTime.now())
             .paymentEvent(paymentEvent)
             .build());

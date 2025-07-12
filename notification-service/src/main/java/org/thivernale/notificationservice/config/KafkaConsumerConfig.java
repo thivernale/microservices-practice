@@ -31,10 +31,10 @@ public class KafkaConsumerConfig {
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootStrapServers);
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, "orderGroup,paymentGroup");
-        props.put(JsonDeserializer.TYPE_MAPPINGS, "orderPlacedEvent:org.thivernale.notificationservice.notification" +
-            ".event" +
-            ".OrderPlacedEvent,paymentEvent:org.thivernale.notificationservice.notification.event.PaymentEvent");
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, "notificationGroup");
+        props.put(JsonDeserializer.TYPE_MAPPINGS,
+            "orderPlacedEvent:org.thivernale.notificationservice.notification.event.OrderPlacedEvent," +
+                "paymentEvent:org.thivernale.notificationservice.notification.event.PaymentEvent");
 
         return props;
     }

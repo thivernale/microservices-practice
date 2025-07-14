@@ -1,12 +1,14 @@
 package org.thivernale.customerservice.controller;
 
+import billing.BillingResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.tomakehurst.wiremock.client.WireMock;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.AutoConfigureDataMongo;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -14,6 +16,8 @@ import org.testcontainers.kafka.ConfluentKafkaContainer;
 import org.thivernale.customerservice.TestcontainersConfiguration;
 import org.thivernale.customerservice.dto.CustomerRequest;
 import org.thivernale.customerservice.model.Address;
+import org.wiremock.grpc.dsl.WireMockGrpcService;
+import org.wiremock.integrations.testcontainers.WireMockContainer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.anything;
@@ -21,58 +25,45 @@ import static org.springframework.http.MediaType.TEXT_PLAIN;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.wiremock.grpc.dsl.WireMockGrpc.message;
+import static org.wiremock.grpc.dsl.WireMockGrpc.method;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 @AutoConfigureDataMongo
-@Import(TestcontainersConfiguration.class)
+@Import({TestcontainersConfiguration.class, WireMockConfig.class})
 class CustomerControllerTest {
-    @LocalServerPort
-    private int port;
-
     @Autowired
     private MockMvc mockMvc;
-
     @Autowired
     private ObjectMapper objectMapper;
-
     @Autowired
     private ConfluentKafkaContainer kafkaContainer;
-
-    // what we need:
-    // wiremock for grpc // alt wiremock w/o testcontainers
-/*
     @Autowired
-    private WireMockContainer wireMockServer;
+    private WireMockContainer wireMockContainer;
 
     @BeforeEach
     void setUp() {
-        mockBillingResponse();
+        mockBillingResponse(wireMockContainer.getPort());
     }
 
-    protected void mockBillingResponse() {
+    protected void mockBillingResponse(int port) {
         WireMockGrpcService wireMockGrpcService = new WireMockGrpcService(
-            new WireMock(wireMockServer.getPort()),
+            new WireMock(port),
             "BillingService"
         );
-        wireMockGrpcService.stubFor(
-            WireMockGrpc.method("CreateBillingAccount")
-                //.withRequestMessage(new AnythingPattern())
-                .willReturn(
-                    WireMockGrpc.message(
-                        BillingResponse.newBuilder()
-                            .setAccountId("account-id")
-                            .setStatus("success")
-                            .build()
-                    )
-                    */
-/*new GrpcResponseDefinitionBuilder(WireMockGrpc.Status.OK)
-                        .fromJson("{ \"accountId\": \"account-id\", \"status\": \"success\" }")*//*
+        BillingResponse billingResponse = BillingResponse.newBuilder()
+            .setAccountId("account-id")
+            .setStatus("success")
+            .build();
 
-                )
+        wireMockGrpcService.stubFor(
+            method("CreateBillingAccount")
+                //.withRequestMessage(new AnythingPattern())
+                .willReturn(message(billingResponse))
+//                .willReturn(json("{ \"accountId\": \"account-id\", \"status\": \"success\" }"))
         );
     }
-*/
 
     @Test
     public void shouldBeRunning() {

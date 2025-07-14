@@ -36,6 +36,10 @@
             <version>6.0.53</version>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java</artifactId>
+        </dependency>
         <!--<dependency>
             <groupId>org.springframework.grpc</groupId>
             <artifactId>spring-grpc-server-web-spring-boot-starter</artifactId>
@@ -56,18 +60,6 @@
         <dependency>
             <groupId>org.springframework.kafka</groupId>
             <artifactId>spring-kafka</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.zipkin.reporter2</groupId>
-            <artifactId>zipkin-reporter-brave</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.micrometer</groupId>
-            <artifactId>micrometer-tracing-bridge-brave</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springdoc</groupId>
@@ -121,16 +113,15 @@
             <version>${wiremock-testcontainers-module.version}</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>com.epages</groupId>
-            <artifactId>wiremock-spring-boot-starter</artifactId>
-            <version>${wiremock-spring-boot-starter.version}</version>
-            <scope>test</scope>
-            <type>pom</type>
-        </dependency>
-        <dependency>
+        <!--<dependency>
             <groupId>org.wiremock</groupId>
             <artifactId>wiremock-grpc-extension</artifactId>
+            <version>0.11.0</version>
+            <scope>test</scope>
+        </dependency>-->
+        <dependency>
+            <groupId>org.wiremock</groupId>
+            <artifactId>wiremock-grpc-extension-jetty12</artifactId>
             <version>0.11.0</version>
             <scope>test</scope>
         </dependency>
@@ -145,7 +136,7 @@
             </extension>
         </extensions>
         <plugins>
-            <plugin>
+            <!--<plugin>
                 <groupId>org.xolstice.maven.plugins</groupId>
                 <artifactId>protobuf-maven-plugin</artifactId>
                 <version>0.6.1</version>
@@ -162,19 +153,32 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>
-            <!--<plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <annotationProcessorPaths>
-                        &lt;!&ndash;<path>
-                            <groupId>org.projectlombok</groupId>
-                            <artifactId>lombok</artifactId>
-                        </path>&ndash;&gt;
-                    </annotationProcessorPaths>
-                </configuration>
             </plugin>-->
+            <plugin>
+                <groupId>io.github.ascopes</groupId>
+                <artifactId>protobuf-maven-plugin</artifactId>
+                <version>3.4.2</version>
+                <configuration>
+                    <outputDescriptorFile>${project.basedir}/target/protos.dsc</outputDescriptorFile>
+                    <protocVersion>${protobuf-java.version}</protocVersion>
+                    <binaryMavenPlugins>
+                        <binaryMavenPlugin>
+                            <groupId>io.grpc</groupId>
+                            <artifactId>protoc-gen-grpc-java</artifactId>
+                            <version>${grpc.version}</version>
+                            <options>jakarta_omit,@generated=omit</options>
+                        </binaryMavenPlugin>
+                    </binaryMavenPlugins>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>generate</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>

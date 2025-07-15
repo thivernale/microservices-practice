@@ -69,19 +69,6 @@
             <scope>compile</scope>
             <optional>true</optional>
         </dependency>
-        <!--<dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-contract-wiremock</artifactId>
-            <exclusions>
-                <exclusion>
-                    &lt;!&ndash;
-                    excluded because a newer version is provided by wiremock-spring-boot-starter
-                    https://mvnrepository.com/artifact/org.springframework.cloud/spring-cloud-contract-wiremock/4.2.0 &ndash;&gt;
-                    <groupId>com.github.tomakehurst</groupId>
-                    <artifactId>wiremock-jre8-standalone</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>-->
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>

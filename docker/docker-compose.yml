@@ -112,7 +112,7 @@ services:
   #      SCHEMA_REGISTRY_LISTENERS: http://schema-registry:8081
 
   keycloak:
-    image: quay.io/keycloak/keycloak
+    image: quay.io/keycloak/keycloak:26.2
     restart: unless-stopped
     environment:
       KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN}
@@ -124,14 +124,14 @@ services:
       KC_HOSTNAME_STRICT_HTTPS: false
       KC_HEALTH_ENABLED: true
     #      KC_DB: mysql
-    #      KC_DB_URL: jdbc:mysql//mysql/keycloak
+    #      KC_DB_URL: jdbc:mysql://mysql/keycloak
     #      KC_DB_USERNAME: ${MYSQL_USER}
     #      KC_DB_PASSWORD: ${MYSQL_PASSWORD}
     ports:
       - '8180:8080'
     command: [ "start-dev", "--import-realm" ]
     volumes:
-      - ../keycloak/:/opt/keycloak/data/import/
+      - ./keycloak/:/opt/keycloak/data/import/
     depends_on:
       - mysql
 

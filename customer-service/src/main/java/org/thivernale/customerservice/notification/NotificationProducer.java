@@ -27,13 +27,14 @@ public class NotificationProducer {
             .setEmail(customer.getEmail())
             .setEventType("CUSTOMER_CREATED")
             .build();
-        log.info("Sending notification request in protobuf format: {}", event);
 
         try {
             Message<byte[]> customerMessage = MessageBuilder.withPayload(event.toByteArray())
                 .setHeader(KafkaHeaders.TOPIC, customerTopic)
                 .build();
             kafkaTemplate.send(customerMessage);
+
+            log.info("Sending notification request in protobuf format: {}", event);
         } catch (Exception e) {
             log.error("Error sending CustomerEvent: {}", event);
         }

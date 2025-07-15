@@ -1,10 +1,13 @@
 package org.thivernale.customerservice;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
+import org.apache.kafka.clients.admin.NewTopic;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.io.DefaultResourceLoader;
+import org.springframework.kafka.config.TopicBuilder;
 import org.springframework.test.context.DynamicPropertyRegistrar;
 import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.kafka.ConfluentKafkaContainer;
@@ -69,5 +72,11 @@ public class TestcontainersConfiguration {
     @ServiceConnection
     ConfluentKafkaContainer kafkaContainer() {
         return new ConfluentKafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.5.0"));
+    }
+
+    @Bean
+    public NewTopic paymentTopic(@Value("${spring.kafka.template.default-topic:}") String customerTopic) {
+        return TopicBuilder.name(customerTopic)
+            .build();
     }
 }

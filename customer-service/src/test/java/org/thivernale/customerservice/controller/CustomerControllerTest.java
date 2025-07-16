@@ -10,20 +10,22 @@ import org.springframework.boot.test.autoconfigure.data.mongo.AutoConfigureDataM
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.testcontainers.kafka.ConfluentKafkaContainer;
 import org.thivernale.customerservice.TestcontainersConfiguration;
 import org.thivernale.customerservice.dto.CustomerRequest;
 import org.thivernale.customerservice.model.Address;
+import org.thivernale.customerservice.model.Customer;
+import org.thivernale.customerservice.repository.CustomerRepository;
 import org.wiremock.grpc.dsl.WireMockGrpcService;
 import org.wiremock.integrations.testcontainers.WireMockContainer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.anything;
-import static org.springframework.http.MediaType.TEXT_PLAIN;
+import static org.springframework.http.MediaType.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.wiremock.grpc.dsl.WireMockGrpc.message;
 import static org.wiremock.grpc.dsl.WireMockGrpc.method;
@@ -41,6 +43,8 @@ class CustomerControllerTest {
     private ConfluentKafkaContainer kafkaContainer;
     @Autowired
     private WireMockContainer wireMockContainer;
+    @Autowired
+    private CustomerRepository customerRepository;
 
     @BeforeEach
     void setUp() {
@@ -76,7 +80,7 @@ class CustomerControllerTest {
     @Test
     public void shouldCreateCustomer() throws Exception {
         mockMvc.perform(post("/api/customer")
-                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .contentType(APPLICATION_JSON_VALUE)
                 .content(objectMapper.writeValueAsString(getCustomerRequest()))
             )
             .andExpect(status().isCreated())
@@ -92,6 +96,30 @@ class CustomerControllerTest {
             .andExpect(jsonPath("$")
                 .isEmpty())
             .andExpect(content().json("[]"));
+    }
+
+    @Test
+    public void shouldGetListOfCustomers() throws Exception {
+        customerRepository.deleteAll();
+        customerRepository.save(Customer.builder()
+            .firstName("first")
+            .lastName("last")
+            .email("email@example.com")
+            .build());
+
+        mockMvc.perform(get("/api/customer"))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(APPLICATION_JSON))
+            .andExpect(jsonPath("$").isArray())
+            .andExpect(jsonPath("$.length()").value(1))
+            .andExpect(jsonPath("$[0].firstName").value("first"))
+            .andExpect(jsonPath("$[0].lastName").value("last"))
+            .andExpect(jsonPath("$[0].email").value("email@example.com"))
+            .andExpect(jsonPath("$[0].address").isEmpty())
+            .andDo(print())
+        ;
+
+        customerRepository.deleteAll();
     }
 
     private CustomerRequest getCustomerRequest() {

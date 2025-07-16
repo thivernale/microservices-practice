@@ -34,6 +34,14 @@ Content-Type: application/json
 GET http://localhost:8080/api/customer/{{customer_id}}
 Authorization: Bearer {{kc_access_token}}
 
+### List customers
+GET http://localhost:8080/api/customer
+Authorization: Bearer {{kc_access_token}}
+
+### List products
+GET http://localhost:8080/api/product
+Authorization: Bearer {{kc_access_token}}
+
 ### Read existing orders
 GET http://localhost:8080/api/order
 Authorization: Bearer {{kc_access_token}}

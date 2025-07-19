@@ -1,9 +1,12 @@
 package org.thivernale.stack;
 
 import org.apache.commons.text.CaseUtils;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import software.amazon.awscdk.*;
 import software.amazon.awscdk.Stack;
+import software.amazon.awscdk.services.docdb.DatabaseCluster;
+import software.amazon.awscdk.services.docdb.Login;
 import software.amazon.awscdk.services.ec2.*;
 import software.amazon.awscdk.services.ec2.InstanceType;
 import software.amazon.awscdk.services.ecs.*;
@@ -44,6 +47,9 @@ public class LocalStack extends Stack {
                     createDbHealthCheck(databaseInstance, idString + "HealthCheck"));
             });
 
+        DatabaseCluster databaseCluster = createDatabaseCluster();
+        var customerServiceDb = createMongoDatabase("CustomerServiceDb", "customer-service-db", databaseCluster);
+
         // Kafka cluster
         CfnCluster mskCluster = createMskCluster();
 
@@ -58,7 +64,9 @@ public class LocalStack extends Stack {
 // TODO mongodb for service
 //            new FargateServiceParams("customer-service", List.of(8090), null, Map.of(
 //                    "BILLING_SERVICE_ADDRESS", "host.docker.internal",
-//                    "BILLING_SERVICE_PORT", "9099")),
+//                    "BILLING_SERVICE_PORT", "9099",
+//                    "SPRING_DATA_MONGODB_URI", ""
+//                    )),
             new FargateServiceParams("inventory-service", List.of(8082), rdbs.get("inventory-service-db"), null),
             new FargateServiceParams("notification-service", List.of(8085), null, Map.of()),
             new FargateServiceParams("order-service", List.of(8083), rdbs.get("order-service-db"), Map.of())
@@ -86,10 +94,17 @@ public class LocalStack extends Stack {
                     .addDependency(mskCluster);
             }
 
-            if (params.additionalEnvVars()
-                .containsKey("BILLING_SERVICE_ADDRESS")) {
-                fargateService.getNode()
-                    .addDependency(serviceMap.get("billing-service"));
+            if (params.additionalEnvVars() != null) {
+                if (params.additionalEnvVars()
+                    .containsKey("BILLING_SERVICE_ADDRESS")) {
+                    fargateService.getNode()
+                        .addDependency(serviceMap.get("billing-service"));
+                }
+                if (params.additionalEnvVars()
+                    .containsKey("SPRING_DATA_MONGODB_URI")) {
+                    fargateService.getNode()
+                        .addDependency(customerServiceDb);
+                }
             }
         });
     }
@@ -252,16 +267,33 @@ public class LocalStack extends Stack {
             .build();
     }
 
-    /*private software.amazon.awscdk.services.docdb.DatabaseInstance createMongoDatabase(String id, String dbName) {
+    private software.amazon.awscdk.services.docdb.DatabaseInstance createMongoDatabase(
+        String id,
+        String dbName,
+        DatabaseCluster databaseCluster
+    ) {
         return software.amazon.awscdk.services.docdb.DatabaseInstance.Builder
             .create(this, id)
-//            .cluster(software.amazon.awscdk.services.docdb.DatabaseCluster.fromDatabaseClusterAttributes(this, id,
-//                software.amazon.awscdk.services.docdb.DatabaseClusterAttributes.builder().build()))
+            .cluster(databaseCluster)
             .instanceType(InstanceType.of(InstanceClass.BURSTABLE2, InstanceSize.MICRO))
             .dbInstanceName(dbName)
             .removalPolicy(RemovalPolicy.DESTROY)
             .build();
-    }*/
+    }
+
+    private @NotNull DatabaseCluster createDatabaseCluster() {
+        return DatabaseCluster.Builder.create(this, "DocdbCluster")
+            .vpc(vpc)
+            .instanceRemovalPolicy(RemovalPolicy.DESTROY)
+            .masterUser(Login.builder()
+                .username("myuser")
+                .build())
+            .instanceType(InstanceType.of(InstanceClass.MEMORY5, InstanceSize.LARGE))
+            .vpcSubnets(SubnetSelection.builder()
+                .subnetType(SubnetType.PUBLIC)
+                .build())
+            .build();
+    }
 }
 
 record FargateServiceParams(

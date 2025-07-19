@@ -11,6 +11,7 @@ import software.amazon.awscdk.services.ec2.*;
 import software.amazon.awscdk.services.ec2.InstanceType;
 import software.amazon.awscdk.services.ecs.*;
 import software.amazon.awscdk.services.ecs.Protocol;
+import software.amazon.awscdk.services.ecs.patterns.ApplicationLoadBalancedFargateService;
 import software.amazon.awscdk.services.logs.LogGroup;
 import software.amazon.awscdk.services.logs.RetentionDays;
 import software.amazon.awscdk.services.msk.CfnCluster;
@@ -37,7 +38,7 @@ public class LocalStack extends Stack {
         Map<String, DatabaseInstance> rdbs = new LinkedHashMap<>();
         Map<String, CfnHealthCheck> healthChecks = new LinkedHashMap<>();
 
-        List.of("inventory-service-db", "order-service-db", "payment-service-db")
+        List.of("inventory-service-db", "order-service-db"/*, "payment-service-db"*/)
             .forEach(dbName -> {
                 String idString = CaseUtils.toCamelCase(dbName, true, '-');
                 DatabaseInstance databaseInstance = createMysqlDatabase(idString, dbName);
@@ -58,7 +59,19 @@ public class LocalStack extends Stack {
 
         // create ECS services
         List<FargateServiceParams> serviceParams = List.of(
-            new FargateServiceParams("api-gateway", List.of(8080), null, null),
+            new FargateServiceParams("api-gateway", List.of(8080), null, Map.of(
+//                "SPRING_PROFILES_ACTIVE", "prod",
+                "SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER-URI",
+                "http://host.docker.internal:8180/realms/spring-boot-microservices-realm", // TODO keycloak service
+                "EUREKA_CLIENT_ENABLED", "false",
+                "APP_URLS_PRODUCT-SERVICE", "http://host.docker.internal:8084",
+                "APP_URLS_ORDER-SERVICE", "http://host.docker.internal:8083",
+                "APP_URLS_CUSTOMER-SERVICE", "http://host.docker.internal:8090",
+                "APP_URLS_PAYMENT-SERVICE", "http://host.docker.internal:8088"
+
+            )),
+            // TODO api gateway also needs an ALB
+            // for communication with
             new FargateServiceParams("billing-service", List.of(8087, 9099), null, null),
             new FargateServiceParams("config-server", List.of(8888), null, null),
 // TODO mongodb for service
@@ -73,8 +86,8 @@ public class LocalStack extends Stack {
 //            new  FargateServiceParams("payment-service", List.of(8088), rdbs.get("payment-service-db"), Map.of()),
 //            new  FargateServiceParams("product-service", List.of(8084), null, Map.of()),
         );
-        Set<String> servicesUsingKafka = Set.of("customer-service", "notification-service", "order-service", "payment" +
-            "-service");
+        Set<String> servicesUsingKafka = Set.of(
+            "customer-service", "notification-service", "order-service", "payment-service");
 
         Map<String, FargateService> serviceMap = new LinkedHashMap<>();
         serviceParams.forEach(params -> {
@@ -222,7 +235,11 @@ public class LocalStack extends Stack {
 
         envVars.put(
             "SPRING_KAFKA_BOOTSTRAP_SERVERS",
-            "localhost.localstack.cloud:4510, localhost.localstack.cloud:4511, localhost.localstack.cloud:4512");
+            "localhost.localstack.cloud:4510, localhost.localstack.cloud:4511, localhost.localstack.cloud:4512"
+        );
+        if (!"config-server".equals(params.imageName())) {
+            envVars.put("SPRING_CONFIG_IMPORT", "optional:configserver:http://host.docker.internal:8888");
+        }
         if (params.additionalEnvVars() != null) {
             envVars.putAll(params.additionalEnvVars());
         }
@@ -249,6 +266,17 @@ public class LocalStack extends Stack {
 
         // add a new container to task definition
         taskDefinition.addContainer(params.imageName() + "Container", containerDefinitionBuilder.build());
+
+        if ("api-gateway".equals(params.imageName())) {
+            return ApplicationLoadBalancedFargateService.Builder.create(this, id)
+                .cluster(escCluster)
+                .taskDefinition(taskDefinition)
+                .serviceName(params.imageName())
+                .desiredCount(1)
+                .healthCheckGracePeriod(Duration.seconds(60))
+                .build()
+                .getService();
+        }
 
         // crate service to run the task
         return FargateService.Builder.create(this, id)

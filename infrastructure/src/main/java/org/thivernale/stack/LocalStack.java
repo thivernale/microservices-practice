@@ -38,7 +38,7 @@ public class LocalStack extends Stack {
         Map<String, DatabaseInstance> rdbs = new LinkedHashMap<>();
         Map<String, CfnHealthCheck> healthChecks = new LinkedHashMap<>();
 
-        List.of("inventory-service-db", "order-service-db"/*, "payment-service-db"*/)
+        List.of("order-service-db"/*, "inventory-service-db", "payment-service-db"*/)
             .forEach(dbName -> {
                 String idString = CaseUtils.toCamelCase(dbName, true, '-');
                 DatabaseInstance databaseInstance = createMysqlDatabase(idString, dbName);
@@ -48,8 +48,8 @@ public class LocalStack extends Stack {
                     createDbHealthCheck(databaseInstance, idString + "HealthCheck"));
             });
 
-        DatabaseCluster databaseCluster = createDatabaseCluster();
-        var customerServiceDb = createMongoDatabase("CustomerServiceDb", "customer-service-db", databaseCluster);
+//        DatabaseCluster databaseCluster = createDatabaseCluster();
+//        var customerServiceDb = createMongoDatabase("CustomerServiceDb", "customer-service-db", databaseCluster);
 
         // Kafka cluster
         CfnCluster mskCluster = createMskCluster();
@@ -59,6 +59,7 @@ public class LocalStack extends Stack {
 
         // create ECS services
         List<FargateServiceParams> serviceParams = List.of(
+            new FargateServiceParams("config-server", List.of(8888), null, null),
             new FargateServiceParams("api-gateway", List.of(8080), null, Map.of(
 //                "SPRING_PROFILES_ACTIVE", "prod",
                 "SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER-URI",
@@ -73,14 +74,13 @@ public class LocalStack extends Stack {
             // TODO api gateway also needs an ALB
             // for communication with
             new FargateServiceParams("billing-service", List.of(8087, 9099), null, null),
-            new FargateServiceParams("config-server", List.of(8888), null, null),
 // TODO mongodb for service
 //            new FargateServiceParams("customer-service", List.of(8090), null, Map.of(
 //                    "BILLING_SERVICE_ADDRESS", "host.docker.internal",
 //                    "BILLING_SERVICE_PORT", "9099",
 //                    "SPRING_DATA_MONGODB_URI", ""
 //                    )),
-            new FargateServiceParams("inventory-service", List.of(8082), rdbs.get("inventory-service-db"), null),
+//            new FargateServiceParams("inventory-service", List.of(8082), rdbs.get("inventory-service-db"), null),
             new FargateServiceParams("notification-service", List.of(8085), null, Map.of()),
             new FargateServiceParams("order-service", List.of(8083), rdbs.get("order-service-db"), Map.of())
 //            new  FargateServiceParams("payment-service", List.of(8088), rdbs.get("payment-service-db"), Map.of()),
@@ -107,17 +107,22 @@ public class LocalStack extends Stack {
                     .addDependency(mskCluster);
             }
 
+            if (!"config-server".equals(params.imageName())) {
+                fargateService.getNode()
+                    .addDependency(serviceMap.get("config-server"));
+            }
+
             if (params.additionalEnvVars() != null) {
                 if (params.additionalEnvVars()
                     .containsKey("BILLING_SERVICE_ADDRESS")) {
                     fargateService.getNode()
                         .addDependency(serviceMap.get("billing-service"));
                 }
-                if (params.additionalEnvVars()
+                /*if (params.additionalEnvVars()
                     .containsKey("SPRING_DATA_MONGODB_URI")) {
                     fargateService.getNode()
                         .addDependency(customerServiceDb);
-                }
+                }*/
             }
         });
     }
@@ -150,7 +155,7 @@ public class LocalStack extends Stack {
         return DatabaseInstance.Builder
             .create(this, id)
             .engine(DatabaseInstanceEngine.mysql(MySqlInstanceEngineProps.builder()
-                .version(MysqlEngineVersion.VER_8_4_5)
+                .version(MysqlEngineVersion.VER_8_4_3)
                 .build()))
             .vpc(vpc)
             .instanceType(InstanceType.of(InstanceClass.BURSTABLE2, InstanceSize.MICRO))
@@ -178,7 +183,7 @@ public class LocalStack extends Stack {
         return CfnCluster.Builder.create(this, "MskCluster")
             .clusterName("kafka-cluster")
             .kafkaVersion("2.8.0")
-            .numberOfBrokerNodes(1)
+            .numberOfBrokerNodes(2)
             .brokerNodeGroupInfo(CfnCluster.BrokerNodeGroupInfoProperty.builder()
                 .instanceType("kafka.m5.xlarge")
                 .clientSubnets(vpc.getPrivateSubnets()
@@ -201,6 +206,10 @@ public class LocalStack extends Stack {
             .build();
     }
 
+    private String getImageName(String imageName) {
+        return (imageName.equals("billing-service") ? "" : "thivernale/") + imageName + ":0.0.1-SNAPSHOT";
+    }
+
     private FargateService createFargateService(FargateServiceParams params) {
 
         String id = CaseUtils.toCamelCase(params.imageName(), true, '-');
@@ -213,7 +222,7 @@ public class LocalStack extends Stack {
 
         ContainerDefinitionOptions.Builder containerDefinitionBuilder = ContainerDefinitionOptions.builder()
             // Localstack will get the image from local repository
-            .image(ContainerImage.fromRegistry(params.imageName()))
+            .image(ContainerImage.fromRegistry(getImageName(params.imageName())))
             .portMappings(params.ports()
                 .stream()
                 .map(port -> PortMapping.builder()
@@ -237,6 +246,8 @@ public class LocalStack extends Stack {
             "SPRING_KAFKA_BOOTSTRAP_SERVERS",
             "localhost.localstack.cloud:4510, localhost.localstack.cloud:4511, localhost.localstack.cloud:4512"
         );
+        // add container to network
+        envVars.put("LOKI_URL", "http://microservices-practice-loki-1:3100/loki/api/v1/push");
         if (!"config-server".equals(params.imageName())) {
             envVars.put("SPRING_CONFIG_IMPORT", "optional:configserver:http://host.docker.internal:8888");
         }
@@ -265,7 +276,7 @@ public class LocalStack extends Stack {
         containerDefinitionBuilder.environment(envVars);
 
         // add a new container to task definition
-        taskDefinition.addContainer(params.imageName() + "Container", containerDefinitionBuilder.build());
+        taskDefinition.addContainer(id + "Container", containerDefinitionBuilder.build());
 
         if ("api-gateway".equals(params.imageName())) {
             return ApplicationLoadBalancedFargateService.Builder.create(this, id)

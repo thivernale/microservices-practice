@@ -34,3 +34,4 @@ build/
 
 /cdk.out/
 /volume/
+.*

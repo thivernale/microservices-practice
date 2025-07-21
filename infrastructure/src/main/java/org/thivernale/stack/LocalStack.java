@@ -42,7 +42,7 @@ public class LocalStack extends Stack {
             .forEach(dbName -> {
                 String idString = CaseUtils.toCamelCase(dbName, true, '-');
                 DatabaseInstance databaseInstance = createMysqlDatabase(idString, dbName);
-                rdbs.put(idString, databaseInstance);
+                rdbs.put(dbName, databaseInstance);
                 healthChecks.put(
                     idString + "HealthCheck",
                     createDbHealthCheck(databaseInstance, idString + "HealthCheck"));
@@ -64,15 +64,13 @@ public class LocalStack extends Stack {
 //                "SPRING_PROFILES_ACTIVE", "prod",
                 "SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER-URI",
                 "http://host.docker.internal:8180/realms/spring-boot-microservices-realm", // TODO keycloak service
-                "EUREKA_CLIENT_ENABLED", "false",
                 "APP_URLS_PRODUCT-SERVICE", "http://host.docker.internal:8084",
                 "APP_URLS_ORDER-SERVICE", "http://host.docker.internal:8083",
                 "APP_URLS_CUSTOMER-SERVICE", "http://host.docker.internal:8090",
                 "APP_URLS_PAYMENT-SERVICE", "http://host.docker.internal:8088"
 
             )),
-            // TODO api gateway also needs an ALB
-            // for communication with
+            // TODO api gateway also needs an ALB for communication with
             new FargateServiceParams("billing-service", List.of(8087, 9099), null, null),
 // TODO mongodb for service
 //            new FargateServiceParams("customer-service", List.of(8090), null, Map.of(
@@ -81,7 +79,7 @@ public class LocalStack extends Stack {
 //                    "SPRING_DATA_MONGODB_URI", ""
 //                    )),
 //            new FargateServiceParams("inventory-service", List.of(8082), rdbs.get("inventory-service-db"), null),
-            new FargateServiceParams("notification-service", List.of(8085), null, Map.of()),
+//            new FargateServiceParams("notification-service", List.of(8085), null, Map.of()),
             new FargateServiceParams("order-service", List.of(8083), rdbs.get("order-service-db"), Map.of())
 //            new  FargateServiceParams("payment-service", List.of(8088), rdbs.get("payment-service-db"), Map.of()),
 //            new  FargateServiceParams("product-service", List.of(8084), null, Map.of()),
@@ -242,12 +240,16 @@ public class LocalStack extends Stack {
 
         Map<String, String> envVars = new HashMap<>();
 
-        envVars.put(
+        // common config:
+        envVars.putAll(Map.of(
             "SPRING_KAFKA_BOOTSTRAP_SERVERS",
-            "localhost.localstack.cloud:4510, localhost.localstack.cloud:4511, localhost.localstack.cloud:4512"
-        );
-        // add container to network
-        envVars.put("LOKI_URL", "http://microservices-practice-loki-1:3100/loki/api/v1/push");
+            "localhost.localstack.cloud:4510, localhost.localstack.cloud:4511, localhost.localstack.cloud:4512",
+            "EUREKA_CLIENT_ENABLED", "false",
+            // add containers to network
+            "LOKI_URL", "http://microservices-practice-loki-1:3100/loki/api/v1/push",
+            "MANAGEMENT_ZIPKIN_TRACING_ENDPOINT", "http://microservices-practice-tempo-1:9411/api/v2/spans",
+            "APP_URLS_API-GATEWAY", "http://host.docker.internal:8080"
+        ));
         if (!"config-server".equals(params.imageName())) {
             envVars.put("SPRING_CONFIG_IMPORT", "optional:configserver:http://host.docker.internal:8888");
         }

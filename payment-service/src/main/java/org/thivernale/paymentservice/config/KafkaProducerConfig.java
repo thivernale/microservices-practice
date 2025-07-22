@@ -58,7 +58,7 @@ public class KafkaProducerConfig {
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootStrapServers);
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
-        props.put(JsonSerializer.TYPE_MAPPINGS, "paymentEvent:org.thivernale.paymentservice.event.PaymentEvent");
+        props.put(JsonSerializer.TYPE_MAPPINGS, "paymentEvent:" + PaymentEvent.class.getName());
 
         return new DefaultKafkaProducerFactory<>(props);
     }

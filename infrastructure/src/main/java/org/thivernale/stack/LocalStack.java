@@ -61,9 +61,8 @@ public class LocalStack extends Stack {
         List<FargateServiceParams> serviceParams = List.of(
             new FargateServiceParams("config-server", List.of(8888), null, null),
             new FargateServiceParams("api-gateway", List.of(8080), null, Map.of(
-//                "SPRING_PROFILES_ACTIVE", "prod",
                 "SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER-URI",
-                "http://host.docker.internal:8180/realms/spring-boot-microservices-realm", // TODO keycloak service
+                "http://host.docker.internal:8180/realms/spring-boot-microservices-realm",
                 "APP_URLS_PRODUCT-SERVICE", "http://host.docker.internal:8084",
                 "APP_URLS_ORDER-SERVICE", "http://host.docker.internal:8083",
                 "APP_URLS_CUSTOMER-SERVICE", "http://host.docker.internal:8090",

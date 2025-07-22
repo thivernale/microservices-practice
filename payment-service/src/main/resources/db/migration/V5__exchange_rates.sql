@@ -1,4 +1,4 @@
-CREATE TABLE `payment-service`.exchange_rates
+CREATE TABLE exchange_rates
 (
     id         BIGINT AUTO_INCREMENT NOT NULL,
     created_at datetime              NOT NULL,
@@ -9,5 +9,5 @@ CREATE TABLE `payment-service`.exchange_rates
     CONSTRAINT pk_exchange_rates PRIMARY KEY (id)
 );
 
-ALTER TABLE `payment-service`.exchange_rates
+ALTER TABLE exchange_rates
     ADD CONSTRAINT uk_currency UNIQUE (currency);

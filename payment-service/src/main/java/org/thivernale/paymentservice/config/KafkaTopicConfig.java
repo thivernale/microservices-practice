@@ -3,6 +3,7 @@ package org.thivernale.paymentservice.config;
 import lombok.Data;
 import org.apache.kafka.clients.admin.AdminClientConfig;
 import org.apache.kafka.clients.admin.NewTopic;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,9 +29,9 @@ public class KafkaTopicConfig {
 
     // KafkaAdmin bean will automatically create topics for all beans of type NewTopic
     @Bean
-    public KafkaAdmin kafkaAdmin() {
+    public KafkaAdmin kafkaAdmin(@Value("${spring.kafka.bootstrap-servers}") String bootStrapServers) {
         Map<String, Object> configs = new HashMap<>();
-        configs.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+        configs.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, bootStrapServers);
         configs.put("offsets.topic.replication.factor", "1");
         configs.put("transaction.state.log.replication.factor", "1");
         configs.put("transaction.state.log.min.isr", "1");

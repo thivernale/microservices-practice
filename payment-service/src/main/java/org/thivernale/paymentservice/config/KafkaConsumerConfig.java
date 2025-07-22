@@ -74,6 +74,10 @@ public class KafkaConsumerConfig {
                 //
                 //CompletableFuture.runAsync(() -> {});
                 log.error(exception.getMessage());
+                if (exception.getCause() != null) {
+                    log.error(exception.getCause()
+                        .getMessage());
+                }
             }
         };
     }

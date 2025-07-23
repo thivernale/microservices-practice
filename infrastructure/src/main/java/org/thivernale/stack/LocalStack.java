@@ -242,7 +242,7 @@ public class LocalStack extends Stack {
         // common config:
         envVars.putAll(Map.of(
             "SPRING_KAFKA_BOOTSTRAP_SERVERS",
-            "localhost.localstack.cloud:4510, localhost.localstack.cloud:4511, localhost.localstack.cloud:4512",
+            "localhost.localstack.cloud:4511", // just one port, otherwise kafka admin cannot connect "localhost.localstack.cloud:4510, localhost.localstack.cloud:4511, localhost.localstack.cloud:4512",
             "EUREKA_CLIENT_ENABLED", "false",
             // add containers to network
             "LOKI_URL", "http://microservices-practice-loki-1:3100/loki/api/v1/push",

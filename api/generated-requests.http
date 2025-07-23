@@ -7,7 +7,7 @@ client_secret = {{CLIENT_SECRET}} &
 grant_type = client_credentials
 
 > {%
-  client.global.set("kc_access_token", response.body.access_token);
+    client.global.set("kc_access_token", response.body.access_token);
 %}
 
 ### Create customer
@@ -27,7 +27,7 @@ Content-Type: application/json
 }
 
 > {%
-  client.global.set("customer_id", response.body);
+    client.global.set("customer_id", response.body);
 %}
 
 ### Read customer
@@ -95,7 +95,7 @@ Authorization: Bearer {{kc_access_token}}
 }
 
 > {%
-  client.global.set("order_id", response.body);
+    client.global.set("order_id", response.body);
 %}
 
 ### Read order
@@ -108,3 +108,32 @@ GET http://localhost:8080/aggregate/order-service/v3/api-docs
 ### Send test event
 POST http://localhost:8080/api/order/send-test-event
 Authorization: Bearer {{kc_access_token}}
+
+### order-service
+GET http://localhost:8083/actuator/env
+Authorization: Bearer {{kc_access_token}}
+
+### payment-service
+POST http://localhost:8088/api/payment
+Content-Type: application/json
+
+{
+  "amount": 200.0,
+  "paymentMethod": "VISA",
+  "orderId": 100,
+  "orderReference": "ORDER-100",
+  "customer": {
+    "firstName": "Jane",
+    "lastName": "Doe",
+    "email": "jdoe@example.com",
+    "address": {
+      "street": "West Dane St - Unit ABC Beverly",
+      "houseNumber": "54",
+      "zipCode": "MA 01915 USA"
+    }
+  }
+}
+
+### payment-service
+POST http://localhost:8088/api/payment/create-payment
+Content-Type: application/json

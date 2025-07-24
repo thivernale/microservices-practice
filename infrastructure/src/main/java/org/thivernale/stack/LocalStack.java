@@ -1,5 +1,7 @@
 package org.thivernale.stack;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.commons.text.CaseUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -22,6 +24,8 @@ import software.constructs.Construct;
 import java.util.*;
 
 public class LocalStack extends Stack {
+    private static final Log log = LogFactory.getLog(LocalStack.class);
+    private final String HOST_DOMAIN_ADDR = "http://host.docker.internal";
     private final Vpc vpc;
 
     private final Cluster escCluster;
@@ -38,7 +42,7 @@ public class LocalStack extends Stack {
         Map<String, DatabaseInstance> rdbs = new LinkedHashMap<>();
         Map<String, CfnHealthCheck> healthChecks = new LinkedHashMap<>();
 
-        List.of("order-service-db"/*, "inventory-service-db", "payment-service-db"*/)
+        List.of("order-service-db"/*, "inventory-service-db"*/, "payment-service-db")
             .forEach(dbName -> {
                 String idString = CaseUtils.toCamelCase(dbName, true, '-');
                 DatabaseInstance databaseInstance = createMysqlDatabase(idString, dbName);
@@ -47,6 +51,7 @@ public class LocalStack extends Stack {
                     idString + "HealthCheck",
                     createDbHealthCheck(databaseInstance, idString + "HealthCheck"));
             });
+        log.info(rdbs.keySet());
 
 //        DatabaseCluster databaseCluster = createDatabaseCluster();
 //        var customerServiceDb = createMongoDatabase("CustomerServiceDb", "customer-service-db", databaseCluster);
@@ -61,12 +66,11 @@ public class LocalStack extends Stack {
         List<FargateServiceParams> serviceParams = List.of(
             new FargateServiceParams("config-server", List.of(8888), null, null),
             new FargateServiceParams("api-gateway", List.of(8080), null, Map.of(
-                "SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER-URI",
-                "http://host.docker.internal:8180/realms/spring-boot-microservices-realm",
-                "APP_URLS_PRODUCT-SERVICE", "http://host.docker.internal:8084",
-                "APP_URLS_ORDER-SERVICE", "http://host.docker.internal:8083",
-                "APP_URLS_CUSTOMER-SERVICE", "http://host.docker.internal:8090",
-                "APP_URLS_PAYMENT-SERVICE", "http://host.docker.internal:8088"
+                "SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER-URI", formatHostDomainUrl("%s:8180/realms/spring-boot-microservices-realm"),
+                "APP_URLS_PRODUCT-SERVICE", formatHostDomainUrl("%s:8084"),
+                "APP_URLS_ORDER-SERVICE", formatHostDomainUrl("%s:8083"),
+                "APP_URLS_CUSTOMER-SERVICE", formatHostDomainUrl("%s:8090"),
+                "APP_URLS_PAYMENT-SERVICE", formatHostDomainUrl("%s:8088")
 
             )),
             // TODO api gateway also needs an ALB for communication with
@@ -79,8 +83,8 @@ public class LocalStack extends Stack {
 //                    )),
 //            new FargateServiceParams("inventory-service", List.of(8082), rdbs.get("inventory-service-db"), null),
 //            new FargateServiceParams("notification-service", List.of(8085), null, Map.of()),
+            new FargateServiceParams("payment-service", List.of(8088), rdbs.get("payment-service-db"), Map.of("EXCHANGERATES_API_KEY", System.getenv("EXCHANGERATES_API_KEY"))),
             new FargateServiceParams("order-service", List.of(8083), rdbs.get("order-service-db"), Map.of())
-//            new  FargateServiceParams("payment-service", List.of(8088), rdbs.get("payment-service-db"), Map.of()),
 //            new  FargateServiceParams("product-service", List.of(8084), null, Map.of()),
         );
         Set<String> servicesUsingKafka = Set.of(
@@ -207,6 +211,10 @@ public class LocalStack extends Stack {
         return (imageName.equals("billing-service") ? "" : "thivernale/") + imageName + ":0.0.1-SNAPSHOT";
     }
 
+    private String formatHostDomainUrl(String hostDomainUrl) {
+        return hostDomainUrl.formatted(HOST_DOMAIN_ADDR);
+    }
+
     private FargateService createFargateService(FargateServiceParams params) {
 
         String id = CaseUtils.toCamelCase(params.imageName(), true, '-');
@@ -247,10 +255,10 @@ public class LocalStack extends Stack {
             // add containers to network
             "LOKI_URL", "http://microservices-practice-loki-1:3100/loki/api/v1/push",
             "MANAGEMENT_ZIPKIN_TRACING_ENDPOINT", "http://microservices-practice-tempo-1:9411/api/v2/spans",
-            "APP_URLS_API-GATEWAY", "http://host.docker.internal:8080"
+            "APP_URLS_API-GATEWAY", formatHostDomainUrl("%s:8080")
         ));
         if (!"config-server".equals(params.imageName())) {
-            envVars.put("SPRING_CONFIG_IMPORT", "optional:configserver:http://host.docker.internal:8888");
+            envVars.put("SPRING_CONFIG_IMPORT", formatHostDomainUrl("optional:configserver:%s:8888"));
         }
         if (params.additionalEnvVars() != null) {
             envVars.putAll(params.additionalEnvVars());
@@ -273,6 +281,7 @@ public class LocalStack extends Stack {
             envVars.put("SPRING_SQL_INIT_MODE", "always");
             envVars.put("SPRING_DATASOURCE_HIKARI_INITIALIZATION_FAIL_TIMEOUT", "60000");
         }
+        log.info(envVars);
 
         containerDefinitionBuilder.environment(envVars);
 
@@ -321,12 +330,13 @@ public class LocalStack extends Stack {
             .build();
     }
 
+    // NEXT TODO https://docs.localstack.cloud/aws/services/docdb/
     private @NotNull DatabaseCluster createDatabaseCluster() {
         return DatabaseCluster.Builder.create(this, "DocdbCluster")
             .vpc(vpc)
             .instanceRemovalPolicy(RemovalPolicy.DESTROY)
             .masterUser(Login.builder()
-                .username("myuser")
+                .username("admin_user")
                 .build())
             .instanceType(InstanceType.of(InstanceClass.MEMORY5, InstanceSize.LARGE))
             .vpcSubnets(SubnetSelection.builder()

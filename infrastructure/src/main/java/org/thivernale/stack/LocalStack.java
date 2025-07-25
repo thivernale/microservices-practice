@@ -1,7 +1,5 @@
 package org.thivernale.stack;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.commons.text.CaseUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -24,7 +22,6 @@ import software.constructs.Construct;
 import java.util.*;
 
 public class LocalStack extends Stack {
-    private static final Log log = LogFactory.getLog(LocalStack.class);
     private final String HOST_DOMAIN_ADDR = "http://host.docker.internal";
     private final Vpc vpc;
 
@@ -51,10 +48,13 @@ public class LocalStack extends Stack {
                     idString + "HealthCheck",
                     createDbHealthCheck(databaseInstance, idString + "HealthCheck"));
             });
-        log.info(rdbs.keySet());
 
-//        DatabaseCluster databaseCluster = createDatabaseCluster();
-//        var customerServiceDb = createMongoDatabase("CustomerServiceDb", "customer-service-db", databaseCluster);
+        // Docdb cluster
+        DatabaseCluster databaseCluster = createDatabaseCluster();
+        //SPRING_DATA_MONGODB_URI
+        String mongoUri = "mongodb://%s:%s@%s".formatted("admin", "adminpassword",
+            databaseCluster.getClusterEndpoint()
+                .getSocketAddress());
 
         // Kafka cluster
         CfnCluster mskCluster = createMskCluster();
@@ -73,16 +73,14 @@ public class LocalStack extends Stack {
                 "APP_URLS_PAYMENT-SERVICE", formatHostDomainUrl("%s:8088")
 
             )),
-            // TODO api gateway also needs an ALB for communication with
             new FargateServiceParams("billing-service", List.of(8087, 9099), null, null),
-// TODO mongodb for service
-//            new FargateServiceParams("customer-service", List.of(8090), null, Map.of(
-//                    "BILLING_SERVICE_ADDRESS", "host.docker.internal",
-//                    "BILLING_SERVICE_PORT", "9099",
-//                    "SPRING_DATA_MONGODB_URI", ""
-//                    )),
+            new FargateServiceParams("customer-service", List.of(8090), null, Map.of(
+                "BILLING_SERVICE_ADDRESS", HOST_DOMAIN_ADDR,
+                "BILLING_SERVICE_PORT", "9099",
+                "SPRING_DATA_MONGODB_URI", mongoUri
+            )),
 //            new FargateServiceParams("inventory-service", List.of(8082), rdbs.get("inventory-service-db"), null),
-//            new FargateServiceParams("notification-service", List.of(8085), null, Map.of()),
+            new FargateServiceParams("notification-service", List.of(8085), null, Map.of("SPRING_DATA_MONGODB_URI", mongoUri)),
             new FargateServiceParams("payment-service", List.of(8088), rdbs.get("payment-service-db"), Map.of("EXCHANGERATES_API_KEY", System.getenv("EXCHANGERATES_API_KEY"))),
             new FargateServiceParams("order-service", List.of(8083), rdbs.get("order-service-db"), Map.of())
 //            new  FargateServiceParams("product-service", List.of(8084), null, Map.of()),
@@ -119,11 +117,11 @@ public class LocalStack extends Stack {
                     fargateService.getNode()
                         .addDependency(serviceMap.get("billing-service"));
                 }
-                /*if (params.additionalEnvVars()
+                if (params.additionalEnvVars()
                     .containsKey("SPRING_DATA_MONGODB_URI")) {
                     fargateService.getNode()
-                        .addDependency(customerServiceDb);
-                }*/
+                        .addDependency(databaseCluster);
+                }
             }
         });
     }
@@ -281,7 +279,6 @@ public class LocalStack extends Stack {
             envVars.put("SPRING_SQL_INIT_MODE", "always");
             envVars.put("SPRING_DATASOURCE_HIKARI_INITIALIZATION_FAIL_TIMEOUT", "60000");
         }
-        log.info(envVars);
 
         containerDefinitionBuilder.environment(envVars);
 
@@ -316,29 +313,15 @@ public class LocalStack extends Stack {
             .build();
     }
 
-    private software.amazon.awscdk.services.docdb.DatabaseInstance createMongoDatabase(
-        String id,
-        String dbName,
-        DatabaseCluster databaseCluster
-    ) {
-        return software.amazon.awscdk.services.docdb.DatabaseInstance.Builder
-            .create(this, id)
-            .cluster(databaseCluster)
-            .instanceType(InstanceType.of(InstanceClass.BURSTABLE2, InstanceSize.MICRO))
-            .dbInstanceName(dbName)
-            .removalPolicy(RemovalPolicy.DESTROY)
-            .build();
-    }
-
-    // NEXT TODO https://docs.localstack.cloud/aws/services/docdb/
     private @NotNull DatabaseCluster createDatabaseCluster() {
         return DatabaseCluster.Builder.create(this, "DocdbCluster")
             .vpc(vpc)
             .instanceRemovalPolicy(RemovalPolicy.DESTROY)
             .masterUser(Login.builder()
-                .username("admin_user")
+                .username("admin")
+                .password(SecretValue.unsafePlainText("adminpassword"))
                 .build())
-            .instanceType(InstanceType.of(InstanceClass.MEMORY5, InstanceSize.LARGE))
+            .instanceType(InstanceType.of(InstanceClass.BURSTABLE2, InstanceSize.MICRO))
             .vpcSubnets(SubnetSelection.builder()
                 .subnetType(SubnetType.PUBLIC)
                 .build())

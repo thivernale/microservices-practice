@@ -22,7 +22,7 @@ import software.constructs.Construct;
 import java.util.*;
 
 public class LocalStack extends Stack {
-    private final String HOST_DOMAIN_ADDR = "http://host.docker.internal";
+    private final static String HOST_DOMAIN_ADDR = "http://host.docker.internal";
     private final Vpc vpc;
 
     private final Cluster escCluster;
@@ -66,16 +66,12 @@ public class LocalStack extends Stack {
         List<FargateServiceParams> serviceParams = List.of(
             new FargateServiceParams("config-server", List.of(8888), null, null),
             new FargateServiceParams("api-gateway", List.of(8080), null, Map.of(
-                "SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER-URI", formatHostDomainUrl("%s:8180/realms/spring-boot-microservices-realm"),
-                "APP_URLS_PRODUCT-SERVICE", formatHostDomainUrl("%s:8084"),
-                "APP_URLS_ORDER-SERVICE", formatHostDomainUrl("%s:8083"),
-                "APP_URLS_CUSTOMER-SERVICE", formatHostDomainUrl("%s:8090"),
-                "APP_URLS_PAYMENT-SERVICE", formatHostDomainUrl("%s:8088")
+                "SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER-URI", formatHostDomainUrl("%s:8180/realms/spring-boot-microservices-realm")
 
             )),
             new FargateServiceParams("billing-service", List.of(8087, 9099), null, null),
             new FargateServiceParams("customer-service", List.of(8090), null, Map.of(
-                "BILLING_SERVICE_ADDRESS", HOST_DOMAIN_ADDR,
+                "BILLING_SERVICE_ADDRESS", "host.docker.internal",
                 "BILLING_SERVICE_PORT", "9099",
                 "SPRING_DATA_MONGODB_URI", mongoUri
             )),
@@ -243,17 +239,19 @@ public class LocalStack extends Stack {
                 .streamPrefix(params.imageName())
                 .build()));
 
-        Map<String, String> envVars = new HashMap<>();
-
         // common config:
-        envVars.putAll(Map.of(
+        Map<String, String> envVars = new HashMap<>(Map.of(
             "SPRING_KAFKA_BOOTSTRAP_SERVERS",
             "localhost.localstack.cloud:4511", // just one port, otherwise kafka admin cannot connect "localhost.localstack.cloud:4510, localhost.localstack.cloud:4511, localhost.localstack.cloud:4512",
             "EUREKA_CLIENT_ENABLED", "false",
             // add containers to network
             "LOKI_URL", "http://microservices-practice-loki-1:3100/loki/api/v1/push",
             "MANAGEMENT_ZIPKIN_TRACING_ENDPOINT", "http://microservices-practice-tempo-1:9411/api/v2/spans",
-            "APP_URLS_API-GATEWAY", formatHostDomainUrl("%s:8080")
+            "APP_URLS_API-GATEWAY", formatHostDomainUrl("%s:8080"),
+            "APP_URLS_PRODUCT-SERVICE", formatHostDomainUrl("%s:8084"),
+            "APP_URLS_ORDER-SERVICE", formatHostDomainUrl("%s:8083"),
+            "APP_URLS_CUSTOMER-SERVICE", formatHostDomainUrl("%s:8090"),
+            "APP_URLS_PAYMENT-SERVICE", formatHostDomainUrl("%s:8088")
         ));
         if (!"config-server".equals(params.imageName())) {
             envVars.put("SPRING_CONFIG_IMPORT", formatHostDomainUrl("optional:configserver:%s:8888"));

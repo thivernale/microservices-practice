@@ -32,19 +32,21 @@ aws s3 ls s3://$BUCKET_NAME
 
 #echo $AWS_ENDPOINT_URL/$BUCKET_NAME/$TEMPLATE_FILE
 
-STACK_EXISTS=$(aws cloudformation list-stacks | grep -c "\"StackName\": \"$STACK_NAME\"" || [[ $? == 1 ]])
+#STACK_EXISTS=$(aws cloudformation list-stacks | grep -c "\"StackName\": \"$STACK_NAME\"" || [[ $? == 1 ]])
 
-#aws cloudformation delete-stack --stack-name $STACK_NAME
-if [ "$STACK_EXISTS" -eq 0 ]; then
+#if [ "$STACK_EXISTS" -eq 0 ]; then
+  aws cloudformation delete-stack \
+      --stack-name $STACK_NAME
+
   echo "Creating stack $STACK_NAME"
   aws cloudformation create-stack \
       --stack-name $STACK_NAME \
       --template-url $AWS_ENDPOINT_URL/$BUCKET_NAME/$TEMPLATE_FILE
-else
-  echo "Updating stack $STACK_NAME"
-  aws cloudformation update-stack \
-      --stack-name $STACK_NAME \
-      --template-url $AWS_ENDPOINT_URL/$BUCKET_NAME/$TEMPLATE_FILE
-fi
+#else
+#  echo "Updating stack $STACK_NAME"
+#  aws cloudformation update-stack \
+#      --stack-name $STACK_NAME \
+#      --template-url $AWS_ENDPOINT_URL/$BUCKET_NAME/$TEMPLATE_FILE
+#fi
 
 aws elbv2 describe-load-balancers --query "LoadBalancers[0].DNSName" --output text

@@ -6,7 +6,9 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "api-gen": "bash -c 'f() { NAME=${1}; ng-openapi-gen --input http://localhost:8080/aggregate/${1}-service/v3/api-docs --output ./src/app/services/${1}; }; f \"$0\"' ",
+    "api-gen:product": "npm run api-gen -- product"
   },
   "private": true,
   "dependencies": {
@@ -37,6 +39,7 @@
     "karma-coverage": "~2.2.0",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
+    "ng-openapi-gen": "^1.0.5",
     "typescript": "~5.6.2"
   }
 }

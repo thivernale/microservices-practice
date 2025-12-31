@@ -1,5 +1,6 @@
 package org.thivernale.apigateway.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -10,13 +11,18 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.reactive.CorsConfigurationSource;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 
+import java.util.Arrays;
 import java.util.List;
 
 import static jakarta.ws.rs.HttpMethod.*;
+import static org.springframework.http.HttpHeaders.*;
 
 @Configuration
 @EnableWebFluxSecurity
 public class SecurityConfig {
+    @Value("${app.urls.frontend:http://localhost:4200}")
+    private List<String> frontendUrl;
+
     @Bean
     public SecurityWebFilterChain springSecurityWebFilterChain(ServerHttpSecurity http) {
         return http
@@ -39,7 +45,15 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.applyPermitDefaultValues();
+//        configuration.setAllowCredentials(true);
+        configuration.setAllowedOrigins(frontendUrl);
+        configuration.setAllowedHeaders(Arrays.asList(
+            ORIGIN,
+            CONTENT_TYPE,
+            ACCEPT,
+            AUTHORIZATION
+        ));
+//        configuration.applyPermitDefaultValues();
         configuration.setAllowedMethods(List.of(GET, POST, PUT, DELETE, OPTIONS, HEAD));
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);

@@ -41,6 +41,7 @@ Authorization: Bearer {{kc_access_token}}
 ### List products
 GET http://localhost:8080/api/product
 Authorization: Bearer {{kc_access_token}}
+Origin: http://localhost:4200
 
 ### Read existing orders
 GET http://localhost:8080/api/order
@@ -103,7 +104,7 @@ GET http://localhost:8080/api/order/{{order_id}}
 Authorization: Bearer {{kc_access_token}}
 
 ### Get order service API documentation
-GET http://localhost:8080/aggregate/order-service/v3/api-docs
+GET http://localhost:8080/aggregate/product-service/v3/api-docs
 
 ### Send test event
 POST http://localhost:8080/api/order/send-test-event

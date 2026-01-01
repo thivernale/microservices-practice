@@ -7,9 +7,10 @@ import Aura from '@primeng/themes/aura';
 import {provideHttpClient, withInterceptors} from '@angular/common/http';
 import {provideAnimationsAsync} from '@angular/platform-browser/animations/async';
 import {provideApiConfiguration as provideApiConfigurationProduct} from './services/product/api-configuration';
+import {environment} from '../environments/environment';
 
-// TODO externalize rootUrl of API-Gateway service
-const API_ROOT_URL = 'http://localhost:8080';
+// rootUrl of API-Gateway service
+const API_ROOT_URL = environment.apiUrl;
 
 export const appConfig: ApplicationConfig = {
   providers: [

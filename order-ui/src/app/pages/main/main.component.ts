@@ -1,8 +1,8 @@
 import {Component, OnInit} from '@angular/core';
-import {SearchService} from '../../services/search.service';
-import {Toolbar} from 'primeng/toolbar';
 import {ButtonDirective} from 'primeng/button';
+import {Toolbar} from 'primeng/toolbar';
 import {ProductListComponent} from '../../components/product-list/product-list.component';
+import {SearchService} from '../../services/search.service';
 
 @Component({
   selector: 'app-main',
@@ -21,13 +21,14 @@ export class MainComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.search()
+    this.search();
   }
 
   search() {
     this.searchService.searchProducts('').subscribe({
       next: response => {
         console.log(response);
+        this.products = [...response];
       },
       error: err => {
         this.products = [];
@@ -47,12 +48,14 @@ export class MainComponent implements OnInit {
             imageUrl: 'https://via.placeholder.com/150'
           }
         )
-        console.error('Search error:', err);
+        //console.error('Search error:', err);
+        throw err;
       }
     });
   }
 
   protected openNewOrderDialog() {
     console.info("Open New Order Dialog");
+    throw new Error('Open New Order Dialog not implemented.');
   }
 }

@@ -25,7 +25,7 @@ export class MainComponent implements OnInit {
   }
 
   search() {
-    this.searchService.search('example query').subscribe({
+    this.searchService.searchProducts('').subscribe({
       next: response => {
         console.log(response);
       },

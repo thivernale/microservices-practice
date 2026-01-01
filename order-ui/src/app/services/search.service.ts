@@ -1,5 +1,7 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
+import {ProductControllerService} from './product/services';
+import {ConfigService} from './config.service';
 
 @Injectable({
   providedIn: 'root'

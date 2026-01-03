@@ -1,0 +1,9 @@
+@if ((loading$ | async)) {
+  <p-block-ui [blocked]="true" styleClass="grid justify-content-center align-content-center">
+    @if (customLoadingIndicator) {
+      <ng-container *ngTemplateOutlet="customLoadingIndicator"></ng-container>
+    } @else {
+      <p-progress-spinner ariaLabel="loading"/>
+    }
+  </p-block-ui>
+}

@@ -1,7 +1,6 @@
-import {Injectable} from '@angular/core';
-import {HttpClient} from '@angular/common/http';
-import {ProductControllerService} from './product/services';
-import {ConfigService} from './config.service';
+import { HttpClient, HttpContext } from '@angular/common/http';
+import { Injectable } from '@angular/core';
+import { SkipLoading } from '../utils/loading/loading.interceptor';
 
 @Injectable({
   providedIn: 'root'
@@ -14,7 +13,10 @@ export class SearchService {
   }
 
   search(query: string) {
-    const headers = {'Content-Type': 'application/json'};
-    return this.httpClient.get<any>(`${this.apiUrl}?q=${encodeURIComponent(query)}`, {headers});
+    const headers = { 'Content-Type': 'application/json' };
+    return this.httpClient.get<any>(`${this.apiUrl}?q=${encodeURIComponent(query)}`, {
+      headers,
+      context: new HttpContext().set(SkipLoading, true)
+    });
   }
 }

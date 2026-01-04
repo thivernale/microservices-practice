@@ -34,7 +34,7 @@ export class KeycloakService {
 
   async init(): Promise<void> {
     const authenticated = await this.keycloak.init({
-      onLoad: 'login-required',
+      onLoad: 'check-sso',
       checkLoginIframe: false
     });
     if (authenticated) {

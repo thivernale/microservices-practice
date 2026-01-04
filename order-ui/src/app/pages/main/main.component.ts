@@ -1,33 +1,36 @@
-import {Component, OnInit} from '@angular/core';
-import {ButtonDirective} from 'primeng/button';
-import {Toolbar} from 'primeng/toolbar';
-import {ProductListComponent} from '../../components/product-list/product-list.component';
-import {SearchService} from '../../services/search.service';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { ButtonDirective } from 'primeng/button';
+import { Ripple } from 'primeng/ripple';
+import { Toolbar } from 'primeng/toolbar';
+import { Subscription } from 'rxjs';
+
+import { ProductListComponent } from '../../components/product-list/product-list.component';
+import { ProductControllerService } from '../../services/product/services/product-controller.service';
+import { KeycloakService } from '../../utils/keycloak/keycloak.service';
 
 @Component({
   selector: 'app-main',
   imports: [
     Toolbar,
     ButtonDirective,
-    ProductListComponent
+    ProductListComponent,
+    Ripple
   ],
   templateUrl: './main.component.html',
-  styles: ``
 })
-export class MainComponent implements OnInit {
+export class MainComponent implements OnInit, OnDestroy {
   protected products: Array<Record<string, any>> | undefined | null;
+  private sub: Subscription = new Subscription();
 
-  constructor(private readonly searchService: SearchService) {
+  constructor(
+    private readonly searchService: ProductControllerService,
+    protected readonly keycloakService: KeycloakService,
+  ) {
   }
 
-  ngOnInit(): void {
-    this.search();
-  }
-
-  search() {
-    this.searchService.searchProducts('').subscribe({
+  ngOnInit() {
+    this.sub = this.search().subscribe({
       next: response => {
-        console.log(response);
         this.products = [...response];
       },
       error: err => {
@@ -48,14 +51,28 @@ export class MainComponent implements OnInit {
             imageUrl: 'https://via.placeholder.com/150'
           }
         )
-        //console.error('Search error:', err);
         throw err;
       }
     });
   }
 
-  protected openNewOrderDialog() {
-    console.info("Open New Order Dialog");
-    throw new Error('Open New Order Dialog not implemented.');
+  ngOnDestroy(): void {
+    this.sub.unsubscribe();
+  }
+
+  protected async toggleAuthenticated() {
+    if (this.keycloakService.keycloak.authenticated) {
+      await this.keycloakService.logout();
+    } else {
+      await this.keycloakService.login();
+    }
+  }
+
+  protected isAuthenticated(): boolean {
+    return this.keycloakService.keycloak.authenticated ?? false;
+  }
+
+  private search() {
+    return this.searchService.getAllProducts();
   }
 }

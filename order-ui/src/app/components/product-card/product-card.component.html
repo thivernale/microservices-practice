@@ -17,7 +17,8 @@
   <ng-template #footer>
     <div class="flex gap-4 mt-1">
       <p-button [outlined]="true" class="w-full" label="Cancel" severity="secondary" styleClass="w-full"/>
-      <p-button class="w-full" label="Save" styleClass="w-full"/>
+      <p-button (click)="saveProduct()" [disabled]="false && (!isChecked() || showMessage())" [label]="'Save ' + tick()"
+                class="w-full" styleClass="w-full"/>
     </div>
   </ng-template>
 </p-card>

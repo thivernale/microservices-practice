@@ -7,7 +7,6 @@ import {ProductCardComponent} from '../product-card/product-card.component';
     ProductCardComponent
   ],
   templateUrl: './product-list.component.html',
-  styles: ``
 })
 export class ProductListComponent {
   @Input() products!: Array<Record<string, any>> | undefined | null;

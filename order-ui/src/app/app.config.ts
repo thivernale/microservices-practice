@@ -16,14 +16,13 @@ import { environment } from '../environments/environment';
 import { routes } from './app.routes';
 import { errorInterceptor } from './core/error.interceptor';
 import { GlobalErrorHandler } from './core/global-error-handler';
-import { provideApiConfiguration as provideApiConfigurationProduct } from './services/product/api-configuration';
+import { provideApiConfiguration as provideCustomerConfig } from './services/customer/api-configuration';
+import { provideApiConfiguration as provideOrderConfig } from './services/order/api-configuration';
+import { provideApiConfiguration as provideProductConfig } from './services/product/api-configuration';
 import { ConfigService } from './utils/config/config.service';
 import { keycloakInterceptor } from './utils/http/keycloak.interceptor';
 import { KeycloakService } from './utils/keycloak/keycloak.service';
 import { loadingInterceptor } from './utils/loading/loading.interceptor';
-
-// rootUrl of API-Gateway service
-const API_ROOT_URL = environment.apiUrl;
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -46,6 +45,8 @@ export const appConfig: ApplicationConfig = {
     ),
     provideAnimationsAsync(),
     providePrimeNG({ theme: { preset: Aura } }),
-    provideApiConfigurationProduct(`${API_ROOT_URL}`),
+    provideProductConfig(environment.apiUrl),
+    provideOrderConfig(environment.apiUrl),
+    provideCustomerConfig(environment.apiUrl),
   ]
 };

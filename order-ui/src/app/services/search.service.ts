@@ -7,7 +7,7 @@ import { SkipLoading } from '../utils/loading/loading.interceptor';
 })
 export class SearchService {
 
-  private readonly apiUrl = 'https://api.example.com/search';
+  private readonly apiUrl = 'https://jsonplaceholder.typicode.com/posts?_page=1&_limit=10';
 
   constructor(private readonly httpClient: HttpClient) {
   }

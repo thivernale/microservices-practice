@@ -1,5 +1,5 @@
-import {HttpErrorResponse, HttpInterceptorFn} from '@angular/common/http';
-import {catchError, throwError} from 'rxjs';
+import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
+import { catchError, throwError } from 'rxjs';
 
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   return next(req).pipe(
@@ -25,7 +25,6 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
         }
       }
 
-      // console.error(errorMessage);
       // Re-throw the error so it can still be handled by the calling component if needed
       return throwError(() => new Error(errorMessage));
     }),

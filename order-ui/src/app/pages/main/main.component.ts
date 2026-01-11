@@ -5,7 +5,8 @@ import { Toolbar } from 'primeng/toolbar';
 import { Subscription } from 'rxjs';
 
 import { ProductListComponent } from '../../components/product-list/product-list.component';
-import { ProductControllerService } from '../../services/product/services/product-controller.service';
+import { ApiFacadeService } from '../../services/api-facade.service';
+import { ProductResponse } from '../../services/product/models/product-response';
 import { KeycloakService } from '../../utils/keycloak/keycloak.service';
 
 @Component({
@@ -14,7 +15,7 @@ import { KeycloakService } from '../../utils/keycloak/keycloak.service';
     Toolbar,
     ButtonDirective,
     ProductListComponent,
-    Ripple
+    Ripple,
   ],
   templateUrl: './main.component.html',
 })
@@ -23,7 +24,7 @@ export class MainComponent implements OnInit, OnDestroy {
   private sub: Subscription = new Subscription();
 
   constructor(
-    private readonly searchService: ProductControllerService,
+    private readonly api: ApiFacadeService,
     protected readonly keycloakService: KeycloakService,
   ) {
   }
@@ -73,6 +74,6 @@ export class MainComponent implements OnInit, OnDestroy {
   }
 
   private search() {
-    return this.searchService.getAllProducts();
+    return this.api.product.getAllProducts();
   }
 }

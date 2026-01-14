@@ -1,7 +1,10 @@
 <h2 class="text-center">Product List</h2>
 
 <div class="flex flex-wrap gap-4 justify-content-center">
-  @for (product of products; track product) {
-    <app-product-card [product]="product"></app-product-card>
+  @for (product of products; track product['id']) {
+    <app-product-card
+      (selected)="onProductSelected($event)"
+      [productResponse]="product"
+      [product]="product"></app-product-card>
   }
 </div>

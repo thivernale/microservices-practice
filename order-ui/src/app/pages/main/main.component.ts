@@ -1,8 +1,11 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, linkedSignal, OnDestroy, OnInit, signal } from '@angular/core';
+import { createLinkedSignal } from '@angular/core/primitives/signals';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ButtonDirective } from 'primeng/button';
 import { Ripple } from 'primeng/ripple';
 import { Toolbar } from 'primeng/toolbar';
-import { Subscription } from 'rxjs';
+import { delay, Subscription } from 'rxjs';
+import { filter } from 'rxjs/operators';
 
 import { ProductListComponent } from '../../components/product-list/product-list.component';
 import { ApiFacadeService } from '../../services/api-facade.service';
@@ -21,16 +24,44 @@ import { KeycloakService } from '../../utils/keycloak/keycloak.service';
 })
 export class MainComponent implements OnInit, OnDestroy {
   protected products: Array<Record<string, any>> | undefined | null;
+  protected productsWithSignal = signal<ProductResponse[]>([]).asReadonly();
+  protected numProductsSignal = createLinkedSignal(
+    () => this.productsWithSignal(),
+    (products: ProductResponse[]) => products.length
+  );
+  protected numProductsWritableSignal = linkedSignal({
+    source: () => this.productsWithSignal(),
+    computation: (value: ProductResponse[]) => {
+      console.log('Num products changed to:', value.length);
+      return value.length;
+    }
+  });
   private sub: Subscription = new Subscription();
+  private readonly search$;
 
   constructor(
     private readonly api: ApiFacadeService,
     protected readonly keycloakService: KeycloakService,
   ) {
+    this.search$ = this.search()
+      .pipe(
+        filter(Boolean),
+        /* switchMap(products => forkJoin(
+            products.map(product => this.api.product.getById({ id: product.id! }))
+          )),*/
+        delay(1000),
+        takeUntilDestroyed()
+      );
+    this.productsWithSignal = toSignal(this.search$, { initialValue: [] });
+  }
+
+  log() {
+    let data = this.numProductsSignal();
+    console.log(data);
   }
 
   ngOnInit() {
-    this.sub = this.search().subscribe({
+    this.sub = this.search$.subscribe({
       next: response => {
         this.products = [...response];
       },
@@ -39,20 +70,23 @@ export class MainComponent implements OnInit, OnDestroy {
         this.products.push(
           {
             id: 1,
-            name: 'Sample Product 1',
+            name: 'Placeholder Product 1',
             description: 'This is a sample product used as fallback data.',
             price: 19.99,
             imageUrl: 'https://via.placeholder.com/150'
           },
           {
             id: 2,
-            name: 'Sample Product 2',
+            name: 'Placeholder Product 2',
             description: 'This is another sample product used as fallback data.',
             price: 29.99,
             imageUrl: 'https://via.placeholder.com/150'
           }
         )
         throw err;
+      },
+      complete: () => {
+        console.log('Search completed');
       }
     });
   }

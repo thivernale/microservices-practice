@@ -10,7 +10,8 @@
     "api-gen": "bash -c 'ng-openapi-gen --input http://localhost:8080/aggregate/$1-service/v3/api-docs --output ./src/app/services/$1' --",
     "api-gen:product": "pnpm run api-gen product",
     "api-gen:order": "pnpm run api-gen order",
-    "api-gen:customer": "pnpm run api-gen customer"
+    "api-gen:customer": "pnpm run api-gen customer",
+    "serve:ssr:order-ui": "node dist/order-ui/server/server.mjs"
   },
   "private": true,
   "dependencies": {
@@ -21,8 +22,11 @@
     "@angular/forms": "^19.0.0",
     "@angular/platform-browser": "^19.0.0",
     "@angular/platform-browser-dynamic": "^19.0.0",
+    "@angular/platform-server": "^19.0.0",
     "@angular/router": "^19.0.0",
+    "@angular/ssr": "^19.2.19",
     "@primeng/themes": "^19.1.4",
+    "express": "^4.18.2",
     "keycloak-js": "^26.2.2",
     "primeflex": "^4.0.0",
     "primeicons": "^7.0.0",
@@ -35,7 +39,9 @@
     "@angular-devkit/build-angular": "^19.0.2",
     "@angular/cli": "^19.0.2",
     "@angular/compiler-cli": "^19.0.0",
+    "@types/express": "^4.17.17",
     "@types/jasmine": "~5.1.0",
+    "@types/node": "^18.18.0",
     "jasmine-core": "~5.4.0",
     "karma": "~6.4.0",
     "karma-chrome-launcher": "~3.2.0",

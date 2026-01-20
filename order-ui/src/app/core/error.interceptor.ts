@@ -6,7 +6,7 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
     catchError((error: HttpErrorResponse) => {
       let errorMessage = 'An unknown error occurred!';
 
-      if (error.error instanceof ErrorEvent) {
+      if ('ErrorEvent' in globalThis && error.error instanceof ErrorEvent) {
         // Client-side or network error
         errorMessage = `Error: ${error.error.message}`;
       } else {

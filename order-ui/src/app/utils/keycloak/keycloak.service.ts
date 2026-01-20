@@ -1,4 +1,5 @@
-import { Injectable } from '@angular/core';
+import { isPlatformServer } from '@angular/common';
+import { inject, Injectable, PLATFORM_ID } from '@angular/core';
 import Keycloak from 'keycloak-js';
 import { environment } from '../../../environments/environment';
 
@@ -33,6 +34,11 @@ export class KeycloakService {
   }
 
   async init(): Promise<void> {
+    const platformId = inject(PLATFORM_ID);
+    if (isPlatformServer(platformId)) {
+      return;
+    }
+
     const authenticated = await this.keycloak.init({
       onLoad: 'check-sso',
       checkLoginIframe: false

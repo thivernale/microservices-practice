@@ -99,7 +99,6 @@ import { playBeep } from '../../utils/beep/beep';
       </div>
     </div>
   `,
-  styles: ``
 })
 export class IntervalTimerComponent {
   rounds = model(10);

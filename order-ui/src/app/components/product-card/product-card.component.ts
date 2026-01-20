@@ -1,3 +1,4 @@
+import { NgOptimizedImage } from '@angular/common';
 import { Component, effect, input, Input, model, OnInit, output, signal } from '@angular/core';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
@@ -10,7 +11,8 @@ import { LoadingService } from '../../utils/loading/loading.service';
   imports: [
     Card,
     Button,
-    Message
+    Message,
+    NgOptimizedImage
   ],
   templateUrl: './product-card.component.html',
 })

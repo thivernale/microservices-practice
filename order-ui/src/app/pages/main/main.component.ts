@@ -1,4 +1,5 @@
-import { Component, linkedSignal, OnDestroy, OnInit, signal } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { Component, Inject, linkedSignal, OnDestroy, OnInit, PLATFORM_ID, signal } from '@angular/core';
 import { createLinkedSignal } from '@angular/core/primitives/signals';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ButtonDirective } from 'primeng/button';
@@ -36,12 +37,15 @@ export class MainComponent implements OnInit, OnDestroy {
       return value.length;
     }
   });
+  protected isAuthenticatedSignal = signal<boolean>(false);
+  protected isBrowser = signal(false);
   private sub: Subscription = new Subscription();
   private readonly search$;
 
   constructor(
     private readonly api: ApiFacadeService,
     protected readonly keycloakService: KeycloakService,
+    @Inject(PLATFORM_ID) private readonly platformId: Object
   ) {
     this.search$ = this.search()
       .pipe(
@@ -53,6 +57,8 @@ export class MainComponent implements OnInit, OnDestroy {
         takeUntilDestroyed()
       );
     this.productsWithSignal = toSignal(this.search$, { initialValue: [] });
+    this.isAuthenticatedSignal = this.keycloakService.isAuthenticatedSignal;
+    this.isBrowser.set(isPlatformBrowser(this.platformId));
   }
 
   log() {

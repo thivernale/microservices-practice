@@ -1,4 +1,4 @@
-import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
 import {
   ApplicationConfig,
   ErrorHandler,
@@ -33,7 +33,8 @@ export const appConfig: ApplicationConfig = {
         loadingInterceptor,
         errorInterceptor,
         keycloakInterceptor
-      ])
+      ]),
+      withFetch()
     ),
     MessageService,
     { provide: ErrorHandler, useClass: GlobalErrorHandler },
@@ -41,7 +42,11 @@ export const appConfig: ApplicationConfig = {
     provideAppInitializer(
       async () => {
         inject(ConfigService).loadConfig();
-        await inject(KeycloakService).init();
+        try {
+          await inject(KeycloakService).init();
+        } catch (e) {
+          console.error('Failed to initialize Keycloak', e);
+        }
       }
     ),
     provideAnimationsAsync(),

@@ -1,7 +1,7 @@
-import {ErrorHandler, Injectable, Injector} from '@angular/core';
-import {MessageService} from 'primeng/api';
+import { ErrorHandler, Injectable, Injector } from '@angular/core';
+import { MessageService } from 'primeng/api';
 
-import {ErrorLoggingService} from './error-logging.service';
+import { ErrorLoggingService } from './error-logging.service';
 
 @Injectable()
 export class GlobalErrorHandler implements ErrorHandler {

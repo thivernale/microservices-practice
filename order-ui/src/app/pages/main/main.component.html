@@ -4,15 +4,18 @@
       <h2>Order Management</h2>
     </div>
     <div class="p-toolbar-group-right">
-      <button
-        (click)="toggleAuthenticated()"
-        [icon]="isAuthenticated() ? 'pi pi-sign-out' : 'pi pi-sign-in'"
-        [label]="isAuthenticated() ? 'Logout' : 'Login'"
-        class="p-mr-2"
-        pButton
-        pRipple
-        type="button"
-      ></button>
+      {{ isAuthenticatedSignal() }}
+      @if (isBrowser()) {
+        <button
+          (click)="toggleAuthenticated()"
+          [icon]="isAuthenticatedSignal() ? 'pi pi-sign-out' : 'pi pi-sign-in'"
+          [label]="isAuthenticatedSignal() ? 'Logout' : 'Login'"
+          class="p-mr-2"
+          pButton
+          pRipple
+          type="button"
+        ></button>
+      }
     </div>
   </p-toolbar>
   <div class="p-2">

@@ -1,5 +1,5 @@
 import { isPlatformServer } from '@angular/common';
-import { inject, Injectable, PLATFORM_ID } from '@angular/core';
+import { inject, Injectable, PLATFORM_ID, signal } from '@angular/core';
 import Keycloak from 'keycloak-js';
 import { environment } from '../../../environments/environment';
 
@@ -7,6 +7,9 @@ import { environment } from '../../../environments/environment';
   providedIn: 'root'
 })
 export class KeycloakService {
+  isAuthenticatedSignal = signal<boolean>(false);
+  private readonly platformId = inject(PLATFORM_ID);
+
   constructor() {
   }
 
@@ -34,15 +37,19 @@ export class KeycloakService {
   }
 
   async init(): Promise<void> {
-    const platformId = inject(PLATFORM_ID);
-    if (isPlatformServer(platformId)) {
+    if (isPlatformServer(this.platformId)) {
       return;
     }
+
+    await this.pingKeycloakServer();
 
     const authenticated = await this.keycloak.init({
       onLoad: 'check-sso',
       checkLoginIframe: false
     });
+
+    this.isAuthenticatedSignal.set(authenticated);
+
     if (authenticated) {
       console.log('Keycloak initialized and user authenticated');
     } else {
@@ -51,6 +58,9 @@ export class KeycloakService {
   }
 
   login(): Promise<void> {
+    if (!this.keycloak.didInitialize) {
+      return this.init().then(() => this.keycloak.login());
+    }
     return this.keycloak.login();
   }
 
@@ -62,5 +72,17 @@ export class KeycloakService {
 
   accountManagement(): Promise<void> {
     return this.keycloak.accountManagement();
+  }
+
+  private async pingKeycloakServer() {
+    // ping url to see if server is reachable
+    try {
+      await fetch(
+        `${environment.keycloakConfig.url}/realms/${environment.keycloakConfig.realm}`,
+        { method: 'HEAD', mode: 'no-cors' }
+      );
+    } catch (error) {
+      throw new Error('Error reaching Keycloak server: ' + (error as Error)?.message, { cause: error as Error });
+    }
   }
 }

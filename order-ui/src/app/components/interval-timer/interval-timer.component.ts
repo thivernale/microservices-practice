@@ -48,10 +48,10 @@ import { playBeep } from '../../utils/beep/beep';
               buttonLayout="horizontal"
               inputId="rounds"
               inputStyleClass="w-6rem">
-              <ng-template #incrementbuttonicon>
+              <ng-template #incrementbuttoniconRounds>
                 <span class="pi pi-plus"></span>
               </ng-template>
-              <ng-template #decrementbuttonicon>
+              <ng-template #decrementbuttoniconRounds>
                 <span class="pi pi-minus"></span>
               </ng-template>
             </p-inputNumber>
@@ -71,10 +71,10 @@ import { playBeep } from '../../utils/beep/beep';
               buttonLayout="horizontal"
               inputId="duration"
               inputStyleClass="w-6rem">
-              <ng-template #incrementbuttonicon>
+              <ng-template #incrementbuttoniconDuration>
                 <span class="pi pi-plus"></span>
               </ng-template>
-              <ng-template #decrementbuttonicon>
+              <ng-template #decrementbuttoniconDuration>
                 <span class="pi pi-minus"></span>
               </ng-template>
             </p-inputNumber>

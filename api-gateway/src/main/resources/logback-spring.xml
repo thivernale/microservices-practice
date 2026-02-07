@@ -29,7 +29,11 @@
         </format>
     </appender>
 
-    <root level="INFO">
-        <appender-ref ref="LOKI"/>
-    </root>
+    <if condition='property("lokiUrl") != null &amp;&amp; !property("lokiUrl").isEmpty()'>
+        <then>
+            <root level="INFO">
+                <appender-ref ref="LOKI"/>
+            </root>
+        </then>
+    </if>
 </configuration>

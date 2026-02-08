@@ -169,6 +169,7 @@ services:
       - GF_AUTH_ANONYMOUS_ENABLED=true
       - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
       - GF_AUTH_DISABLE_LOGIN_FORM=true
+      - GF_DASHBOARD_DEFAULT_HOME_DASHBOARD_PATH=/etc/grafana/provisioning/dashboard.json
     ports:
       - "3000:3000"
 

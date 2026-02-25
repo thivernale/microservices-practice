@@ -39,11 +39,11 @@ public class NotificationConsumer {
                 )
             )
         }*/
-        )
-    public void handleCodeNotification(ConsumerRecord<String, OrderPlacedEvent> record) {
+    )
+    public void handleCodeNotification(ConsumerRecord<String, OrderPlacedEvent> consumerRecord) {
         // send out an email notification
-        var orderPlacedEvent = record.value();
-        log.info("Received Notification for Order - {} with key {}", orderPlacedEvent.orderReference(), record.key());
+        var orderPlacedEvent = consumerRecord.value();
+        log.info("Received Notification for Order - {} with key {}", orderPlacedEvent.orderReference(), consumerRecord.key());
     }
 
     @KafkaListener(topics = {"orderTopic"})

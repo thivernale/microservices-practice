@@ -30,7 +30,7 @@ class OrderNowRepositoryTest {
     }
 
     @Test
-    public void shouldFindNoResults() {
+    void shouldFindNoResults() {
         List<Order> orderList = repository.findAll();
         Assertions.assertNotNull(orderList);
         Assertions.assertEquals(JdbcTestUtils.countRowsInTable(this.jdbcClient, "orders"), orderList.size());

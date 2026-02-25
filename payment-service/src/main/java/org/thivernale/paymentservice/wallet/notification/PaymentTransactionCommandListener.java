@@ -31,19 +31,19 @@ public class PaymentTransactionCommandListener {
         },*/
         topics = "${spring.kafka.topics[0].name:payment-command}",
         containerFactory = "listenerContainerFactory")
-    public void handlePaymentTransactionCommand(ConsumerRecord<String, String> record) {
-        PaymentTransactionCommand command = getPaymentTransactionCommand(record);
+    public void handlePaymentTransactionCommand(ConsumerRecord<String, String> consumerRecord) {
+        PaymentTransactionCommand command = getPaymentTransactionCommand(consumerRecord);
         PaymentTransactionCommandHandler handler = commandHandlers.get(command);
 
         if (handler == null) {
-            throw new IllegalArgumentException("Unsupported payment transaction command " + command.toString() + " from record: " + record);
+            throw new IllegalArgumentException("Unsupported payment transaction command " + command.toString() + " from consumerRecord: " + consumerRecord);
         }
 
-        handler.process(record.key(), record.value());
+        handler.process(consumerRecord.key(), consumerRecord.value());
     }
 
-    private PaymentTransactionCommand getPaymentTransactionCommand(ConsumerRecord<String, String> record) {
-        Header commandHeader = record.headers()
+    private PaymentTransactionCommand getPaymentTransactionCommand(ConsumerRecord<String, String> consumerRecord) {
+        Header commandHeader = consumerRecord.headers()
             .lastHeader("command");
         if (commandHeader != null && commandHeader.value() != null) {
             String commandString = new String(commandHeader.value());

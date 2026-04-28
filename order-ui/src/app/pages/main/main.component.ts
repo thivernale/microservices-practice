@@ -88,7 +88,7 @@ export class MainComponent implements OnInit, OnDestroy {
             price: 29.99,
             imageUrl: 'https://via.placeholder.com/150'
           }
-        )
+        );
         throw err;
       },
       complete: () => {
@@ -102,7 +102,7 @@ export class MainComponent implements OnInit, OnDestroy {
   }
 
   protected async toggleAuthenticated() {
-    if (this.keycloakService.keycloak.authenticated) {
+    if (this.isAuthenticated()) {
       await this.keycloakService.logout();
     } else {
       await this.keycloakService.login();

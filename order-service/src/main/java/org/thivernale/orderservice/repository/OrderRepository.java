@@ -15,7 +15,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     List<Order> findAll();
 
     @EntityGraph(attributePaths = {"items"})
+    // Explicitly define the query
     @Query("SELECT o FROM Order o")
-        // Explicitly define the query
     List<Order> findAllWithItems();
 }

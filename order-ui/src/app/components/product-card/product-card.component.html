@@ -13,6 +13,14 @@
     Lorem ipsum dolor sit amet, consectetur adipisicing elit. Inventore sed consequuntur error repudiandae numquam
     deserunt
     quisquam repellat libero asperiores earum nam nobis, culpa ratione quam perferendis esse, cupiditate neque quas!
+    @defer (hydrate on hover) {
+      <p-message icon="pi pi-exclamation-triangle" severity="warn" text="This is a deferred message!">
+      </p-message>
+    } @placeholder (minimum 2s) {
+      <p-message icon="pi pi-spin pi-spinner" severity="info" text="Loading deferred content...">
+      </p-message>
+    }
+
     @if (product.id === 1) {
       <p-message icon="pi pi-info-circle" severity="info" text="This is a special product!">
       </p-message>

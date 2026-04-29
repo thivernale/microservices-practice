@@ -20,7 +20,7 @@ export class ProductCardComponent implements OnInit {
   @Input() product!: any;
 // signal input allows value to be bound from parent component
   productResponse = input.required<ProductResponse>();
-// model input allows to keep data in sync with 2-way binding
+// model input allows keeping data in sync with 2-way binding
   isChecked = model(false);
 
   tick = signal(0);
@@ -31,7 +31,7 @@ export class ProductCardComponent implements OnInit {
     () => {
       return this.selected.emit(String(this.tick()));
     }
-  )
+  );
 
   constructor(private readonly loadingService: LoadingService) {
   }

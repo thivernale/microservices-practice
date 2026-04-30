@@ -18,7 +18,7 @@ public class BillingGrpcService extends BillingServiceGrpc.BillingServiceImplBas
 //        super.createBillingAccount(request, responseObserver);
 
         BillingResponse billingResponse = BillingResponse.newBuilder()
-            .setAccountId("account-id")
+            .setAccountId("account-id-" + request.getClientId())
             .setStatus("success")
             .build();
         /*try {

@@ -1,4 +1,4 @@
-###
+### Billing service - create billing account
 GRPC localhost:9099/BillingService/CreateBillingAccount
 
 {

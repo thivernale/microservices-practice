@@ -2,6 +2,7 @@ import { isPlatformServer } from '@angular/common';
 import { inject, Injectable, PLATFORM_ID, signal } from '@angular/core';
 import Keycloak from 'keycloak-js';
 import { environment } from '../../../environments/environment';
+import { CustomerRequest } from '../../services/customer/models/customer-request';
 
 @Injectable({
   providedIn: 'root'
@@ -34,6 +35,28 @@ export class KeycloakService {
 
   get fullName(): string {
     return this.keycloak.tokenParsed?.["name"] as string;
+  }
+
+  get customerIdentity(): CustomerRequest | null {
+    const token = this.keycloak.tokenParsed as Record<string, unknown> | undefined;
+    if (!token) {
+      return null;
+    }
+
+    const id = this.userId;
+    const email = (token['email'] as string) ?? '';
+    if (!id || !email) {
+      return null;
+    }
+
+    const { firstName, lastName } = this.resolveCustomerName(token);
+
+    return {
+      id,
+      email,
+      firstName,
+      lastName,
+    };
   }
 
   async init(): Promise<void> {
@@ -84,5 +107,31 @@ export class KeycloakService {
     } catch (error) {
       throw new Error('Error reaching Keycloak server: ' + (error as Error)?.message, { cause: error as Error });
     }
+  }
+
+  private resolveCustomerName(token: Record<string, unknown>): { firstName: string; lastName: string } {
+    const givenName = token['given_name'] as string | undefined;
+    const familyName = token['family_name'] as string | undefined;
+    let firstName = givenName ?? '';
+    let lastName = familyName ?? '';
+
+    if (!firstName || !lastName) {
+      const fullName = (token['name'] as string) ?? '';
+      if (fullName) {
+        const parts = fullName.trim().split(/\s+/);
+        if (!firstName && parts.length > 0) {
+          firstName = parts[0];
+        }
+        if (!lastName && parts.length > 1) {
+          lastName = parts.slice(1).join(' ');
+        }
+      }
+    }
+
+    if (!firstName) {
+      firstName = (token['preferred_username'] as string) ?? 'User';
+    }
+
+    return { firstName, lastName };
   }
 }

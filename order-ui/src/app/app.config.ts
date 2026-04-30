@@ -22,6 +22,7 @@ import { provideApiConfiguration as provideOrderConfig } from './services/order/
 import { provideApiConfiguration as provideProductConfig } from './services/product/api-configuration';
 import { ConfigService } from './utils/config/config.service';
 import { keycloakInterceptor } from './utils/http/keycloak.interceptor';
+import { CustomerIdentityService } from './utils/keycloak/customer-identity.service';
 import { KeycloakService } from './utils/keycloak/keycloak.service';
 import { loadingInterceptor } from './utils/loading/loading.interceptor';
 
@@ -42,8 +43,10 @@ export const appConfig: ApplicationConfig = {
     provideAppInitializer(
       async () => {
         inject(ConfigService).loadConfig();
+        const customerIdentityService = inject(CustomerIdentityService);
         try {
           await inject(KeycloakService).init();
+          await customerIdentityService.syncCustomerIdentity();
         } catch (e) {
           console.error('Failed to initialize Keycloak', e);
         }

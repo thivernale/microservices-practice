@@ -1,7 +1,7 @@
 name: microservices-practice
 services:
   mysql:
-    image: 'mysql:latest'
+    image: 'mysql:8.4.3'
     volumes:
       - mysql_data:/var/lib/mysql
       - ./mysql/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
@@ -112,7 +112,7 @@ services:
   #      SCHEMA_REGISTRY_LISTENERS: http://schema-registry:8081
 
   keycloak:
-    image: quay.io/keycloak/keycloak:26.2
+    image: quay.io/keycloak/keycloak:26.6.1
     restart: unless-stopped
     environment:
       KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN}

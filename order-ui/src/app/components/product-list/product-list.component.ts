@@ -18,11 +18,11 @@ export class ProductListComponent {
 
   constructor() {
     effect(() => {
-      console.log('Number of ProductCardComponent children:', this.children().length);
-    })
+      // console.log('Number of ProductCardComponent children:', this.children().length);
+    });
   }
 
-  protected onProductSelected($event: ProductResponse["id"]) {
-    console.log('Product selected with ID:', $event);
+  protected onProductSelected($event: ProductResponse['id']) {
+    // console.log('Product selected with ID:', $event);
   }
 }

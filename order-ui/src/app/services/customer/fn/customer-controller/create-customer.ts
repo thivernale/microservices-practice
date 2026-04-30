@@ -8,12 +8,13 @@ import { StrictHttpResponse } from '../../strict-http-response';
 import { RequestBuilder } from '../../request-builder';
 
 import { CustomerRequest } from '../../models/customer-request';
+import { CustomerResponse } from '../../models/customer-response';
 
 export interface CreateCustomer$Params {
       body: CustomerRequest
 }
 
-export function createCustomer(http: HttpClient, rootUrl: string, params: CreateCustomer$Params, context?: HttpContext): Observable<StrictHttpResponse<string>> {
+export function createCustomer(http: HttpClient, rootUrl: string, params: CreateCustomer$Params, context?: HttpContext): Observable<StrictHttpResponse<CustomerResponse>> {
   const rb = new RequestBuilder(rootUrl, createCustomer.PATH, 'post');
   if (params) {
     rb.body(params.body, 'application/json');
@@ -24,7 +25,7 @@ export function createCustomer(http: HttpClient, rootUrl: string, params: Create
   ).pipe(
     filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
     map((r: HttpResponse<any>) => {
-      return r as StrictHttpResponse<string>;
+      return r as StrictHttpResponse<CustomerResponse>;
     })
   );
 }

@@ -147,7 +147,7 @@ export class CustomerControllerService extends BaseService {
    *
    * This method sends `application/json` and handles request body of type `application/json`.
    */
-  createCustomer$Response(params: CreateCustomer$Params, context?: HttpContext): Observable<StrictHttpResponse<string>> {
+  createCustomer$Response(params: CreateCustomer$Params, context?: HttpContext): Observable<StrictHttpResponse<CustomerResponse>> {
     const obs = createCustomer(this.http, this.rootUrl, params, context);
     return obs;
   }
@@ -158,10 +158,10 @@ export class CustomerControllerService extends BaseService {
    *
    * This method sends `application/json` and handles request body of type `application/json`.
    */
-  createCustomer(params: CreateCustomer$Params, context?: HttpContext): Observable<string> {
+  createCustomer(params: CreateCustomer$Params, context?: HttpContext): Observable<CustomerResponse> {
     const resp = this.createCustomer$Response(params, context);
     return resp.pipe(
-      map((r: StrictHttpResponse<string>): string => r.body)
+      map((r: StrictHttpResponse<CustomerResponse>): CustomerResponse => r.body)
     );
   }
 

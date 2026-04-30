@@ -5,7 +5,7 @@ import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ButtonDirective } from 'primeng/button';
 import { Ripple } from 'primeng/ripple';
 import { Toolbar } from 'primeng/toolbar';
-import { delay, Subscription } from 'rxjs';
+import { delay, Observable, Subscription, throwError } from 'rxjs';
 import { filter } from 'rxjs/operators';
 
 import { ProductListComponent } from '../../components/product-list/product-list.component';
@@ -33,7 +33,7 @@ export class MainComponent implements OnInit, OnDestroy {
   protected numProductsWritableSignal = linkedSignal({
     source: () => this.productsWithSignal(),
     computation: (value: ProductResponse[]) => {
-      console.log('Num products changed to:', value.length);
+      // console.log('Num products changed to:', value.length);
       return value.length;
     }
   });
@@ -63,7 +63,7 @@ export class MainComponent implements OnInit, OnDestroy {
 
   log() {
     let data = this.numProductsSignal();
-    console.log(data);
+    // console.log(data);
   }
 
   ngOnInit() {
@@ -92,7 +92,7 @@ export class MainComponent implements OnInit, OnDestroy {
         throw err;
       },
       complete: () => {
-        console.log('Search completed');
+        // console.log('Search completed');
       }
     });
   }
@@ -113,7 +113,8 @@ export class MainComponent implements OnInit, OnDestroy {
     return this.keycloakService.keycloak.authenticated ?? false;
   }
 
-  private search() {
-    return this.api.product.getAllProducts();
+  private search(): Observable<ProductResponse[]> {
+    return throwError(() => new Error('Simulated API error'));
+    // return this.api.product.getAllProducts();
   }
 }

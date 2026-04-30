@@ -19,9 +19,9 @@ public class CustomerController {
     private final CustomerService customerService;
 
     @PostMapping
-    public ResponseEntity<String> createCustomer(@RequestBody @Valid CustomerRequest customerRequest) {
+    public ResponseEntity<CustomerResponse> createCustomer(@RequestBody @Valid CustomerRequest customerRequest) {
         return ResponseEntity.status(HttpStatus.CREATED)
-            .body(customerService.createCustomer(customerRequest));
+            .body(customerService.findById(customerService.createCustomer(customerRequest)));
     }
 
     @PutMapping("{id}")

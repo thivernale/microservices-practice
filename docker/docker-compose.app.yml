@@ -1,0 +1,110 @@
+# Overlay for running app services in containers alongside the infrastructure stack.
+# Build images first:
+#   ./mvnw spring-boot:build-image -pl config-server,discovery-server,api-gateway,notification-service,billing-service
+# Run:
+#   docker compose -f docker/docker-compose.yml -f docker/docker-compose.app.yml up -d
+
+services:
+  config-server:
+    image: thivernale/config-server:latest
+    container_name: config-server
+    ports:
+      - "8888:8888"
+    environment:
+      # Serve config files from mounted volume instead of baked-in classpath
+      SPRING_CLOUD_CONFIG_SERVER_NATIVE_SEARCHLOCATIONS: file:///config
+      LOKI_URL: http://loki:3100/loki/api/v1/push
+      MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: http://tempo:9411/api/v2/spans
+    volumes:
+      - ../config-server/src/main/resources/configurations:/config:ro
+    networks:
+      - microservices-net
+    healthcheck:
+      test: [ "CMD", "bash", "-c", "exec 3<>/dev/tcp/localhost/8888" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    restart: unless-stopped
+
+  discovery-server:
+    image: thivernale/discovery-server:latest
+    container_name: discovery-server
+    ports:
+      - "8761:8761"
+    environment:
+      SPRING_CONFIG_IMPORT: optional:configserver:http://config-server:8888
+      EUREKA_HOST: discovery-server
+      LOKI_URL: http://loki:3100/loki/api/v1/push
+      MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: http://tempo:9411/api/v2/spans
+    networks:
+      - microservices-net
+    depends_on:
+      config-server:
+        condition: service_healthy
+    restart: unless-stopped
+
+  api-gateway:
+    image: thivernale/api-gateway:latest
+    container_name: api-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_CONFIG_IMPORT: optional:configserver:http://config-server:8888
+      EUREKA_HOST: discovery-server
+      EUREKA_INSTANCE_PREFERIPADDRESS: "true"
+      LOKI_URL: http://loki:3100/loki/api/v1/push
+      MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: http://tempo:9411/api/v2/spans
+      # Use jwk-set-uri instead of issuer-uri: issuer-uri triggers OIDC discovery
+      # which calls localhost:8180 — unreachable from inside Docker
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWKSETURI: http://keycloak:8080/realms/spring-boot-microservices-realm/protocol/openid-connect/certs
+    networks:
+      - microservices-net
+    depends_on:
+      config-server:
+        condition: service_healthy
+      discovery-server:
+        condition: service_started
+    restart: unless-stopped
+
+  notification-service:
+    image: thivernale/notification-service:latest
+    container_name: notification-service
+    ports:
+      - "8085:8085"
+    environment:
+      SPRING_CONFIG_IMPORT: optional:configserver:http://config-server:8888
+      EUREKA_HOST: discovery-server
+      EUREKA_INSTANCE_PREFERIPADDRESS: "true"
+      DB_HOST: mongo
+      SPRING_KAFKA_BOOTSTRAPSERVERS: broker:29092
+      SPRING_MAIL_HOST: mail-dev
+      SPRING_MAIL_PORT: 1025
+      LOKI_URL: http://loki:3100/loki/api/v1/push
+      MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: http://tempo:9411/api/v2/spans
+    networks:
+      - microservices-net
+      - kafka-net
+    depends_on:
+      config-server:
+        condition: service_healthy
+      discovery-server:
+        condition: service_started
+      mongo:
+        condition: service_started
+      broker:
+        condition: service_started
+      mail-dev:
+        condition: service_started
+    restart: unless-stopped
+
+  billing-service:
+    #    image: thivernale/billing-service:latest # TODO change build process to match the rest of the services
+    image: billing-service:0.0.1-SNAPSHOT
+    container_name: billing-service
+    ports:
+      - "8087:8087"
+      - "9099:9099"
+    networks:
+      - microservices-net
+    restart: unless-stopped

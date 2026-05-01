@@ -28,7 +28,7 @@ Content-Type: application/json
 }
 
 > {%
-    client.global.set("customer_id", response.body);
+    client.global.set("customer_id", response.body.id);
 %}
 
 ### Read customer
@@ -36,7 +36,7 @@ Content-Type: application/json
 GET http://localhost:8080/api/customer/{{customer_id}}
 Authorization: Bearer {{kc_access_token}}
 
-### Check if customer exists by id
+### Check if customer exists
 GET http://localhost:8080/api/customer/exists/{{customer_id}}
 Authorization: Bearer {{kc_access_token}}
 

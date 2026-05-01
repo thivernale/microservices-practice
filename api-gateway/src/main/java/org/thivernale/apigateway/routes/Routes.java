@@ -28,15 +28,18 @@ public class Routes {
 
         RouteLocatorBuilder.Builder routes = builder.routes();
 
-        swaggerUiConfigProperties.getUrls()
-            .forEach(url -> routes
-                .route(url.getName() + "_swagger", r -> r.path(url.getUrl())
-                    .filters(
-                        f -> f.setPath("/v3/api-docs")
-                            .circuitBreaker(c -> c.setName(url.getName() + "circuitBreaker")
-                                .setFallbackUri("/fallback"))
-                    )
-                    .uri(getServiceUri(url.getUrl()))));
+        var urls = swaggerUiConfigProperties.getUrls();
+        if (urls != null) {
+            urls
+                .forEach(url -> routes
+                    .route(url.getName() + "_swagger", r -> r.path(url.getUrl())
+                        .filters(
+                            f -> f.setPath("/v3/api-docs")
+                                .circuitBreaker(c -> c.setName(url.getName() + "circuitBreaker")
+                                    .setFallbackUri("/fallback"))
+                        )
+                        .uri(getServiceUri(url.getUrl()))));
+        }
 
         return routes
             .build();

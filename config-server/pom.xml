@@ -24,4 +24,45 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <image>
+                        <builder>paketobuildpacks/ubuntu-noble-builder:latest</builder>
+                        <!--<builder>paketobuildpacks/builder-noble-java-tiny:latest</builder>-->
+                        <createdDate>now</createdDate>
+                        <name>thivernale/${project.artifactId}:${project.version}</name>
+                        <publish>false</publish>
+                        <tags>
+                            <tag>thivernale/${project.artifactId}:latest</tag>
+                        </tags>
+                    </image>
+                    <docker>
+                        <publishRegistry>
+                            <username></username>
+                            <password></password>
+                            <url></url>
+                        </publishRegistry>
+                    </docker>
+                    <excludes>
+                        <exclude>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                        </exclude>
+                    </excludes>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>build-image-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>

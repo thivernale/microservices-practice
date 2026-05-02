@@ -55,6 +55,8 @@ data:
         metrics_path: '/actuator/prometheus'
         static_configs:
           - targets: [ 'api-gateway.default.svc.cluster.local:8080' ]
+            labels:
+              application: 'API Gateway'
       - job_name: 'product-service'
         metrics_path: '/actuator/prometheus'
         static_configs:

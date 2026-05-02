@@ -99,8 +99,7 @@ services:
     restart: unless-stopped
 
   billing-service:
-    #    image: thivernale/billing-service:latest # TODO change build process to match the rest of the services
-    image: billing-service:0.0.1-SNAPSHOT
+    image: thivernale/billing-service:latest
     container_name: billing-service
     ports:
       - "8087:8087"

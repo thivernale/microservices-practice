@@ -39,4 +39,4 @@ loki:
   url: ${LOKI_URL:http://localhost:3100/loki/api/v1/push}
 app:
   urls:
-    api-gateway: http://localhost:8080, http://localhost:4200
+    api-gateway: http://localhost:8080

@@ -58,6 +58,7 @@ services:
       # Use jwk-set-uri instead of issuer-uri: issuer-uri triggers OIDC discovery
       # which calls localhost:8180 — unreachable from inside Docker
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWKSETURI: http://keycloak:8080/realms/spring-boot-microservices-realm/protocol/openid-connect/certs
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://localhost:8180/realms/spring-boot-microservices-realm
     networks:
       - microservices-net
     depends_on:

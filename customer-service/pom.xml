@@ -13,7 +13,7 @@
     <description>customer-service</description>
 
     <properties>
-        <wiremock-testcontainers-module.version>1.0-alpha-14</wiremock-testcontainers-module.version>
+        <wiremock-testcontainers-module.version>1.0-alpha-15</wiremock-testcontainers-module.version>
         <wiremock-spring-boot-starter.version>1.0.0</wiremock-spring-boot-starter.version>
     </properties>
 

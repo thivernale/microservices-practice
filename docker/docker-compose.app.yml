@@ -105,6 +105,12 @@ services:
     ports:
       - "8087:8087"
       - "9099:9099"
+    environment:
+      SPRING_CONFIG_IMPORT: optional:configserver:http://config-server:8888
+      EUREKA_HOST: discovery-server
+      EUREKA_INSTANCE_PREFERIPADDRESS: "true"
+      LOKI_URL: http://loki:3100/loki/api/v1/push
+      MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: http://tempo:9411/api/v2/spans
     networks:
       - microservices-net
     restart: unless-stopped

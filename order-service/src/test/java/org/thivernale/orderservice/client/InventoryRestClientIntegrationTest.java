@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
 import org.thivernale.orderservice.config.WebClientConfig;
 import org.thivernale.orderservice.dto.InventoryResponse;
 
@@ -21,6 +22,7 @@ import static org.thivernale.orderservice.client.OrderMocks.setupMockInventoryAv
 @SpringBootTest
 @ContextConfiguration(classes = {InventoryRestClient.class, WebClientConfig.class})
 @ActiveProfiles("test")
+@TestPropertySource(properties = "app.urls.inventory-service=http://localhost:1030")
 class InventoryRestClientIntegrationTest extends BaseClientIntegrationTest {
     @Autowired
     private InventoryRestClient inventoryRestClient;

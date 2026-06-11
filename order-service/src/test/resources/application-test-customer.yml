@@ -1,3 +1,6 @@
+app:
+  urls:
+    customer-service: ""
 spring:
   application:
     name: customer-service

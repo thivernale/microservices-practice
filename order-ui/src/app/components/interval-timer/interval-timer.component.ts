@@ -108,8 +108,36 @@ export class IntervalTimerComponent {
   isTimerActive = signal(false);
   remaining = computed(() => this.remainingTotal() % (this.duration() ?? 1));
   protected readonly Math = Math;
-  private timeout: any;
+  private timeout: ReturnType<typeof setInterval> | null = null;
   private targetTime = 0;
+  private readonly tick = () => {
+    const now = Date.now();
+    // Calculate true remaining time based on system clock
+    const remaining = Math.max(0, Math.ceil((this.targetTime - now) / 1000));
+    this.remainingTotal.set(remaining);
+
+    if (this.playSound() && this.remaining() <= 3) {
+      playBeep(this.remaining() === 0 ? 0.5 : 0.2);
+    }
+
+    if (this.remainingTotal() <= 0) {
+      this.isTimerActive.set(false);
+    }
+  };
+  private readonly manageInterval = effect(() => {
+    const active = this.isTimerActive();
+    const remaining = this.remainingTotal();
+
+    if (remaining <= 0 || !active) {
+      if (this.timeout) {
+        clearInterval(this.timeout);
+        this.timeout = null;
+      }
+    } else if (!this.timeout) {
+      this.targetTime = Date.now() + (remaining * 1000);
+      this.timeout = setInterval(this.tick, 1_000);
+    }
+  });
 
   protected toggleTimerStarted() {
     if (this.remainingTotal() > 0) {
@@ -132,37 +160,4 @@ export class IntervalTimerComponent {
       this.isTimerActive.set(true);
     }
   }
-
-  private readonly tick = () => {
-    const now = Date.now();
-    // Calculate true remaining time based on system clock
-    const remaining = Math.max(0, Math.ceil((this.targetTime - now) / 1000));
-    this.remainingTotal.set(remaining);
-    // this.remainingTotal.update(value => value - 1);
-
-    if (this.playSound() && this.remaining() <= 3) {
-      playBeep(this.remaining() === 0 ? 0.5 : 0.2);
-    }
-
-    if (this.remainingTotal() <= 0) {
-      this.isTimerActive.set(false);
-    }
-  };
-
-  private readonly manageInterval = effect(() => {
-    const active = this.isTimerActive();
-    const remaining = this.remainingTotal();
-
-    if (remaining <= 0 || !active) {
-      if (this.timeout) {
-        console.log("Clearing", this.timeout)
-        clearTimeout(this.timeout);
-        this.timeout = null;
-      }
-    } else if (!this.timeout) {
-      this.targetTime = Date.now() + (remaining * 1000);
-      this.timeout = setInterval(this.tick, 1_000) as any as number;
-      console.log("Setting", this.timeout)
-    }
-  });
 }

@@ -8,7 +8,7 @@ import org.testcontainers.utility.DockerImageName;
 
 @TestConfiguration(proxyBeanMethods = false)
 public class TestOrderServiceApplication {
-    @Bean
+    @Bean(initMethod = "start", destroyMethod = "stop")
     @ServiceConnection
     MySQLContainer<?> mysqlContainer() {
         return new MySQLContainer<>(DockerImageName.parse("mysql:8.3.0"))

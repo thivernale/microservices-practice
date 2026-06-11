@@ -33,12 +33,14 @@ import static org.thivernale.orderservice.controller.OrderStubs.*;
         "spring.cloud.discovery.client.simple.instances.inventory-service[0].uri=http://localhost:1032",
         "spring.cloud.discovery.client.simple.instances.customer-service[0].uri=http://localhost:1032",
         "spring.cloud.discovery.client.simple.instances.payment-service[0].uri=http://localhost:1032",
+        "app.urls.inventory-service=http://localhost:1032",
+        "app.urls.customer-service=http://localhost:1032",
+        "app.urls.payment-service=http://localhost:1032"
     }
 )
 @ContextConfiguration(classes = {TestOrderServiceApplication.class, WireMockConfig.class})
 @EmbeddedKafka(
     partitions = 1,
-    brokerProperties = {"listeners=PLAINTEXT://localhost:9092", "port=9092"},
     kraft = true,
     topics = {"orderTopic", "codeTopic"}
 )

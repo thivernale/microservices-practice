@@ -29,7 +29,10 @@
         </format>
     </appender>
 
-    <if condition='property("lokiUrl") != null &amp;&amp; !property("lokiUrl").isEmpty()'>
+    <condition class="ch.qos.logback.core.boolex.ExpressionPropertyCondition">
+        <expression>isDefined("lokiUrl") &amp;&amp; !propertyEquals("lokiUrl", "")</expression>
+    </condition>
+    <if>
         <then>
             <root level="INFO">
                 <appender-ref ref="LOKI"/>

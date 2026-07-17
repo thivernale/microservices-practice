@@ -215,8 +215,8 @@ public class LocalStack extends Stack {
 
         // ECS task definition
         FargateTaskDefinition taskDefinition = FargateTaskDefinition.Builder.create(this, id + "Task")
-            .cpu(256)
-            .memoryLimitMiB(512)
+            .cpu(256) // .25 vCPU
+            .memoryLimitMiB(512) // 512 MiB
             .build();
 
         ContainerDefinitionOptions.Builder containerDefinitionBuilder = ContainerDefinitionOptions.builder()

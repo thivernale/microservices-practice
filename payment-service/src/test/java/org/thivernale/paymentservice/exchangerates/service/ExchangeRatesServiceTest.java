@@ -1,5 +1,6 @@
 package org.thivernale.paymentservice.exchangerates.service;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -7,6 +8,7 @@ import org.thivernale.paymentservice.wallet.repository.CurrencyAccountRepository
 
 import java.math.BigDecimal;
 
+@Disabled("Test is used for calling the external service and probing the data")
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.MOCK,
     properties = """

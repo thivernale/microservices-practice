@@ -8,10 +8,12 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.thivernale.paymentservice.exchangerates.model.ExchangeRate;
 import org.thivernale.paymentservice.exchangerates.repository.ExchangeRateRepository;
 import org.thivernale.paymentservice.wallet.dto.CreatePaymentTransactionRequest;
 import org.thivernale.paymentservice.wallet.exception.InsufficientFundsException;
 import org.thivernale.paymentservice.wallet.model.CurrencyAccount;
+import org.thivernale.paymentservice.wallet.model.CurrencyType;
 import org.thivernale.paymentservice.wallet.model.PaymentTransaction;
 import org.thivernale.paymentservice.wallet.repository.PaymentTransactionRepository;
 
@@ -69,6 +71,50 @@ class PaymentTransactionServiceTest {
             .isEqualByComparingTo(sourceAccBalance.subtract(sourceAcc.getBalance()))
             .isEqualByComparingTo(destAccBalance.subtract(destAcc.getBalance())
                 .negate());
+    }
+
+    @Test
+    public void whenValid_thenPaymentShouldBeCreatedWithCurrencyConversion() {
+        CreatePaymentTransactionRequest request = createPaymentRequest();
+        CurrencyAccount sourceAcc = getCurrencyAccount(request.sourceCurrencyAccountId());
+        CurrencyAccount destAcc = getCurrencyAccount(request.destCurrencyAccountId());
+        destAcc.setCurrency(CurrencyType.EUR);
+        BigDecimal sourceAccBalance = sourceAcc.getBalance();
+        BigDecimal destAccBalance = destAcc.getBalance();
+
+        setupAccountMocks(sourceAcc, destAcc, true);
+
+        ExchangeRate exchangeRateBGN = ExchangeRate.builder()
+            .currency(CurrencyType.BGN)
+            .rate(new BigDecimal("1.70562"))
+            .build();
+        when(exchangeRateRepository.findByCurrency(CurrencyType.BGN)).thenReturn(Optional.of(exchangeRateBGN));
+        ExchangeRate exchangeRateEUR = ExchangeRate.builder()
+            .currency(CurrencyType.EUR)
+            .rate(new BigDecimal("0.87207"))
+            .build();
+        when(exchangeRateRepository.findByCurrency(CurrencyType.EUR)).thenReturn(Optional.of(exchangeRateEUR));
+
+        paymentTransactionService.create(request);
+
+        verify(paymentTransactionRepository, times(1)).save(paymentCaptor.capture());
+        verifyNoMoreInteractions(paymentTransactionRepository);
+
+        // account balance updates on success
+        BigDecimal amount = paymentCaptor.getValue()
+            .getAmount();
+        assertThat(amount)
+            .as("Amount in %s subtracted from source account".formatted(sourceAcc.getCurrency()))
+            .isEqualByComparingTo(sourceAccBalance.subtract(sourceAcc.getBalance())
+            );
+
+        BigDecimal expectedDestAmount = new CurrencyConverter(exchangeRateRepository)
+            .convert(sourceAcc.getCurrency(), destAcc.getCurrency(), amount);
+        assertThat(expectedDestAmount)
+            .as("Amount in %s added to destination account".formatted(destAcc.getCurrency()))
+            .isEqualByComparingTo(destAccBalance.subtract(destAcc.getBalance())
+                .negate()
+            );
     }
 
     @Test

@@ -2,15 +2,13 @@ package org.thivernale.paymentservice;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.kafka.test.context.EmbeddedKafka;
 
-@SpringBootTest
-@EmbeddedKafka(
-    partitions = 1,
-    brokerProperties = {"listeners=PLAINTEXT://localhost:9092", "port=9092"},
-//    kraft = true,
-    adminTimeout = 1
-)
+@SpringBootTest(properties = {
+    // Provide a placeholder to prevent Kafka from complaining about null bootstrap servers
+    "spring.kafka.bootstrap-servers=localhost:9092",
+    // Prevent the listeners from automatically spinning up and looking for active nodes
+    "spring.kafka.listener.auto-startup=false"
+})
 class PaymentServiceApplicationTests {
 
     @Test

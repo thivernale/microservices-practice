@@ -1,5 +1,6 @@
 package org.thivernale.paymentservice.wallet.repository;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -10,6 +11,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Disabled(value = "Test for exploring different modes of fetching data with query, entity graph, derived query")
 @DataJpaTest
 @AutoConfigureTestDatabase(
     replace = AutoConfigureTestDatabase.Replace.NONE

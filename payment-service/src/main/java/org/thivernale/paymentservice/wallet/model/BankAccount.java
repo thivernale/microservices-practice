@@ -23,8 +23,8 @@ public class BankAccount extends BaseEntity {
     List<CurrencyAccount> currencyAccounts;
     private String number;
     private String customerId;
-    @Column(nullable = false)
-    private BigDecimal balance;
     @Column(nullable = false, precision = 38, scale = 2)
+    private BigDecimal balance;
+    @Column(nullable = false)
     private String currency;
 }

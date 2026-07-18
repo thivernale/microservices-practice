@@ -1,10 +1,11 @@
 package org.thivernale.paymentservice.wallet.service;
 
 import jakarta.persistence.EntityNotFoundException;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.thivernale.paymentservice.exchangerates.repository.ExchangeRateRepository;
@@ -33,6 +34,8 @@ class RefundServiceTest {
     private PaymentTransactionService paymentTransactionService;
     @Mock
     private ExchangeRateRepository exchangeRateRepository;
+    @Captor
+    private ArgumentCaptor<Refund> refundCaptor;
 
     @BeforeEach
     void setUp() {
@@ -49,6 +52,7 @@ class RefundServiceTest {
     public void whenValid_thenRefundShouldBeCreated() {
         CancelPaymentTransactionRequest request = TestDataUtil.createRefundRequest();
         PaymentTransaction paymentTransaction = PaymentTransaction.builder()
+            .id(request.paymentTransactionId())
             .amount(request.amount())
             .source(TestDataUtil.getCurrencyAccount(1L))
             .refunds(List.of())
@@ -65,11 +69,13 @@ class RefundServiceTest {
 
         refundService.create(request);
 
-        verify(refundRepository, times(1)).save(any(Refund.class));
+        verify(refundRepository, times(1)).save(refundCaptor.capture());
         verifyNoMoreInteractions(refundRepository);
 
         // account balance updates on success
-        assertThat(request.amount())
+        assertThat(refundCaptor.getValue()
+            .getAmount())
+            .isEqualByComparingTo(request.amount())
             .isEqualByComparingTo(sourceAccBalance.subtract(paymentTransaction.getSource()
                     .getBalance())
                 .negate());
@@ -82,7 +88,7 @@ class RefundServiceTest {
         when(paymentTransactionService.findByIdWithRefunds(request.paymentTransactionId()))
             .thenReturn(Optional.empty());
 
-        Assertions.assertThatThrownBy(() -> refundService.create(request))
+        assertThatThrownBy(() -> refundService.create(request))
             .isInstanceOf(EntityNotFoundException.class)
             .hasMessage("Payment transaction not found, id: " + request.paymentTransactionId());
 

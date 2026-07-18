@@ -15,7 +15,6 @@ import org.thivernale.paymentservice.wallet.model.Refund;
 import org.thivernale.paymentservice.wallet.repository.RefundRepository;
 
 import java.math.BigDecimal;
-import java.math.MathContext;
 
 @Service
 @RequiredArgsConstructor
@@ -62,9 +61,7 @@ public class RefundService {
     }
 
     private void subtractFromCurrencyAccountBalance(CurrencyAccount account, BigDecimal delta) {
-        account.setBalance(account.getBalance()
-            .subtract(delta, new MathContext(account.getBalance()
-                .scale())));
+        account.setBalance(CurrencyConverter.subtractFromBalance(account.getBalance(), delta));
         currencyAccountService.save(account);
     }
 }

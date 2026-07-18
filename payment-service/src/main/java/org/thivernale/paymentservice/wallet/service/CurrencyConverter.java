@@ -9,7 +9,6 @@ import org.thivernale.paymentservice.exchangerates.repository.ExchangeRateReposi
 import org.thivernale.paymentservice.wallet.model.CurrencyType;
 
 import java.math.BigDecimal;
-import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.Objects;
 import java.util.Optional;
@@ -19,6 +18,8 @@ import java.util.Optional;
 @Slf4j
 public class CurrencyConverter {
     public static final CurrencyType BASE_CURRENCY = CurrencyType.USD;
+    public static final int AMOUNT_SCALE = 2;
+    public static final int RATE_SCALE = 12;
 
     private final ExchangeRateRepository exchangeRateRepository;
 
@@ -27,6 +28,29 @@ public class CurrencyConverter {
             return Optional.of(BigDecimal.ONE);
         }
 
+        // Keeps 12 decimal places regardless of how large the exchange rate is
+        return resolveRates(from, to)
+            .map(rates -> rates.to()
+                .divide(rates.from(), RATE_SCALE, RoundingMode.HALF_UP));
+    }
+
+    public BigDecimal convert(CurrencyType from, CurrencyType to, BigDecimal amount) {
+        if (Objects.equals(from, to)) {
+            return amount.setScale(AMOUNT_SCALE, RoundingMode.HALF_UP);
+        }
+
+        CurrencyRates rates = resolveRates(from, to)
+            .orElseThrow(() -> new EntityNotFoundException(
+                "Exchange rate not found for %s/%s".formatted(from, to)));
+
+        // Multiply then divide in one step so the result isn't rounded twice
+        // (once for an intermediate rate, once for the final amount).
+        return rates.to()
+            .multiply(amount)
+            .divide(rates.from(), AMOUNT_SCALE, RoundingMode.HALF_UP);
+    }
+
+    private Optional<CurrencyRates> resolveRates(CurrencyType from, CurrencyType to) {
         Optional<BigDecimal> rateFrom = BASE_CURRENCY.equals(from) ? Optional.of(BigDecimal.ONE) :
             exchangeRateRepository.findByCurrency(from)
                 .map(ExchangeRate::getRate);
@@ -35,15 +59,22 @@ public class CurrencyConverter {
                 .map(ExchangeRate::getRate);
 
         if (rateFrom.isPresent() && rateTo.isPresent()) {
-            return Optional.of(rateTo.get()
-                .divide(rateFrom.get(), new MathContext(6, RoundingMode.HALF_UP)));
+            return Optional.of(new CurrencyRates(rateFrom.get(), rateTo.get()));
         }
 
         return Optional.empty();
     }
 
-    public BigDecimal convert(CurrencyType from, CurrencyType to, BigDecimal amount) {
-        return getRate(from, to).orElseThrow(EntityNotFoundException::new)
-            .multiply(amount);
+    private record CurrencyRates(BigDecimal from, BigDecimal to) {
+    }
+
+    /**
+     * Subtracts {@code delta} from {@code balance}, keeping {@code balance}'s original scale.
+     * Centralizes the balance-rounding policy so account-mutating services don't each
+     * re-implement it (a prior per-call-site MathContext misuse silently mis-rounded balances).
+     */
+    public static BigDecimal subtractFromBalance(BigDecimal balance, BigDecimal delta) {
+        return balance.subtract(delta)
+            .setScale(balance.scale(), RoundingMode.HALF_UP);
     }
 }

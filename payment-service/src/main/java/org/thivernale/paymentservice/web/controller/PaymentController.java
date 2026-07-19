@@ -16,7 +16,6 @@ import org.thivernale.paymentservice.wallet.dto.CreatePaymentTransactionRequest;
 import org.thivernale.paymentservice.wallet.model.PaymentTransactionCommand;
 import org.thivernale.paymentservice.wallet.notification.PaymentTransactionProducer;
 
-import java.math.BigDecimal;
 import java.util.UUID;
 
 @RestController
@@ -44,27 +43,14 @@ public class PaymentController {
     }
 
     @PostMapping("/create-payment")
-    public void createPayment() {
-        @NotNull(message = "Source bank account cannot be empty") Long sourceBankAccountId = 1L;
-        Long destBankAccountId = 2L;
-
-        CreatePaymentTransactionRequest request = new CreatePaymentTransactionRequest(
-            BigDecimal.valueOf(100L), sourceBankAccountId, destBankAccountId, "test payment transaction"
-        );
-
+    public void createPayment(@Valid @NotNull @RequestBody CreatePaymentTransactionRequest request) {
         paymentTransactionProducer.sendCommandResult(
             topic, requestId, jsonConverter.toString(request), PaymentTransactionCommand.CREATE
         );
     }
 
     @PostMapping("/cancel-payment")
-    public void cancelPayment() {
-        Long paymentId = 1L;
-
-        CancelPaymentTransactionRequest request = new CancelPaymentTransactionRequest(
-            paymentId, BigDecimal.valueOf(100L), "test refund"
-        );
-
+    public void cancelPayment(@Valid @NotNull @RequestBody CancelPaymentTransactionRequest request) {
         paymentTransactionProducer.sendCommandResult(
             topic, requestId, jsonConverter.toString(request), PaymentTransactionCommand.REFUND
         );

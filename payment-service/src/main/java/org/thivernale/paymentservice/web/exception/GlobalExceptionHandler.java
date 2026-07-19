@@ -1,5 +1,6 @@
 package org.thivernale.paymentservice.web.exception;
 
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -12,8 +13,8 @@ import java.util.Map;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
-    @ExceptionHandler(BusinessException.class)
-    public ResponseEntity<String> handle(BusinessException exception) {
+    @ExceptionHandler({BusinessException.class, EntityNotFoundException.class})
+    public ResponseEntity<String> handle(RuntimeException exception) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
             .body(exception.getMessage());
     }

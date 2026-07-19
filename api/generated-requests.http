@@ -126,15 +126,15 @@ Authorization: Bearer {{kc_access_token}}
 GET http://localhost:8083/actuator/env
 Authorization: Bearer {{kc_access_token}}
 
-### payment-service
+### payment-service - Add payment for order
 POST http://localhost:8088/api/payment
 Content-Type: application/json
 
 {
-  "amount": 200.0,
+  "amount": 200.10,
   "paymentMethod": "VISA",
-  "orderId": 100,
-  "orderReference": "ORDER-100",
+  "orderId": 101,
+  "orderReference": "ORDER-101",
   "customer": {
     "firstName": "Jane",
     "lastName": "Doe",
@@ -147,6 +147,30 @@ Content-Type: application/json
   }
 }
 
-### payment-service
+> {%
+    client.global.set("payment_id", response.body);
+%}
+
+### Get payment
+GET http://localhost:8088/api/payment/{{payment_id}}
+
+### Create payment transaction
 POST http://localhost:8088/api/payment/create-payment
 Content-Type: application/json
+
+{
+  "sourceCurrencyAccountId": 1,
+  "destCurrencyAccountId": 2,
+  "amount": 100.20,
+  "note": "Payment transaction; One hundred, twenty cent"
+}
+
+### Cancel payment transaction
+POST http://localhost:8088/api/payment/cancel-payment
+Content-Type: application/json
+
+{
+  "paymentTransactionId": 4,
+  "amount": 100.20,
+  "reason": "Refund; One hundred, twenty cent"
+}

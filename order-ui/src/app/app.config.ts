@@ -9,7 +9,7 @@ import {
 import { provideClientHydration, withEventReplay, withIncrementalHydration } from '@angular/platform-browser';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideRouter } from '@angular/router';
-import Aura from '@primeng/themes/aura';
+import preset from '@primeuix/themes/aura';
 import { MessageService } from 'primeng/api';
 import { providePrimeNG } from 'primeng/config';
 
@@ -53,7 +53,7 @@ export const appConfig: ApplicationConfig = {
       }
     ),
     provideAnimationsAsync(),
-    providePrimeNG({ theme: { preset: Aura } }),
+    providePrimeNG({ theme: { preset } }),
     provideProductConfig(environment.apiUrl),
     provideOrderConfig(environment.apiUrl),
     provideCustomerConfig(environment.apiUrl),

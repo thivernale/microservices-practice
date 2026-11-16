@@ -175,7 +175,7 @@
             <plugin>
                 <groupId>io.github.ascopes</groupId>
                 <artifactId>protobuf-maven-plugin</artifactId>
-                <version>3.4.2</version>
+                <version>3.10.2</version>
                 <configuration>
                     <outputDescriptorFile>${project.basedir}/target/protos.dsc</outputDescriptorFile>
                     <protocVersion>${protobuf-java.version}</protocVersion>
